@@ -1,17 +1,26 @@
-module Main where
+module Main
+  ( listProcesses
+  , isRunning
+  , findProcess
+  , kill
+  , main
+  )
+where
 
 import Data.Char
 import Data.List
 import Data.String.Utils
 import System.Directory
+import System.Exit
 import System.FilePath.Posix
 import System.IO
+import qualified System.Process.Typed as P
 
 
 data Process = Process
   { pname :: String
   , pid :: FilePath
-  }
+  } deriving Show
 
 
 linuxProcessesDir :: String
@@ -28,27 +37,28 @@ processes = do
   directories <- listDirectory linuxProcessesDir
   return $ filter isInteger directories
 
-listProcessNames :: IO [Process]
-listProcessNames = do
+listProcesses :: IO [Process]
+listProcesses = do
   procs <- processes
   mapM readName procs
 
-isRunningProcess :: String -> IO Bool
-isRunningProcess name = do
-  procs <- listProcessNames
-  return $ isFoundProcess name procs
+isRunning :: String -> IO Bool
+isRunning name = do
+  procs <- listProcesses
+  return $ empty $ findProcessByName name procs
+  where
+    empty = not . null
 
-isFoundProcess :: String -> [Process] -> Bool
-isFoundProcess name procs =
-  any (hasName . pname) procs
+findProcessByName :: String -> [Process] -> [Process]
+findProcessByName name procs =
+  filter (hasName . pname) procs
   where
     hasName = (isInfixOf name)
 
-
--- findProcess :: String -> (Int, String)
--- findProcess name = do
---   procs <- listProcessNames
---   return
+findProcess :: String -> IO [Process]
+findProcess name = do
+  procs <- listProcesses
+  return $ findProcessByName name procs
 
 readName :: FilePath -> IO Process
 readName p = do
@@ -57,8 +67,19 @@ readName p = do
   where
     process = linuxProcessesDir </> p </> linuxProcessName
 
+kill :: Process -> ExitCode
+kill process =
+  let cmd = "kill -9 " ++ (pid process)
+  in
+    do
+        exit <- P.runProcess $ P.shell cmd
+        exit
+
 main = do
-  result <- isRunningProcess "firefox"
+  kateProcs <- findProcess "kate"
+  result <- kill $ kate
   putStrLn $ show result
+  where
+    kate = kateProcs !! 0
   -- p <- processes
   -- print p
