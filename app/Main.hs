@@ -20,6 +20,7 @@ import qualified System.Process.Typed as P
 data Process = Process
   { pname :: String
   , pid :: FilePath
+  , command :: String
   } deriving Show
 
 
@@ -28,6 +29,9 @@ linuxProcessesDir = "/proc"
 
 linuxProcessName :: String
 linuxProcessName = "comm"
+
+linuxProcessCommand :: String
+linuxProcessCommand = "cmdline"
 
 isInteger :: FilePath -> Bool
 isInteger xs = all isDigit xs
@@ -55,31 +59,31 @@ findProcessByName name procs =
   where
     hasName = (isInfixOf name)
 
-findProcess :: String -> IO [Process]
-findProcess name = do
+findProcess :: String -> String -> IO [Process]
+findProcess name keyword = do
   procs <- listProcesses
   return $ findProcessByName name procs
 
 readName :: FilePath -> IO Process
 readName p = do
-  name <- readFile process
-  return $ Process {pid = p, pname = strip name}
+  name <- readFile processName
+  cmd <- readFile processCommand
+  return $ Process {pid = p, pname = strip name, command = cmd }
   where
-    process = linuxProcessesDir </> p </> linuxProcessName
+    processName = linuxProcessesDir </> p </> linuxProcessName
+    processCommand = linuxProcessesDir </> p </> linuxProcessCommand
 
-kill :: Process -> ExitCode
+kill :: Process -> IO (ExitCode)
 kill process =
   let cmd = "kill -9 " ++ (pid process)
   in
     do
-        exit <- P.runProcess $ P.shell cmd
-        exit
+      exitCode <- P.runProcess $ P.shell cmd
+      return exitCode
 
 main = do
-  kateProcs <- findProcess "kate"
-  result <- kill $ kate
+  kate <- findProcess "kate" ""
+  result <- kill $ kate !! 0
   putStrLn $ show result
-  where
-    kate = kateProcs !! 0
   -- p <- processes
   -- print p
