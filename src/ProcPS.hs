@@ -17,7 +17,7 @@ import System.IO
 import qualified System.Process.Typed as P
 
 
-data FilterProperty = PName | PID | Command
+data FilterProperty = PName | Command
 
 data Process = Process
   { pname :: String
