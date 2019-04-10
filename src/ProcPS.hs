@@ -81,7 +81,6 @@ readName p = do
 kill :: Process -> IO (ExitCode)
 kill process =
   let cmd = "kill -9 " ++ (pid process)
-  in
-    do
-      exitCode <- P.runProcess $ P.shell cmd
-      return exitCode
+  in do
+    exitCode <- P.runProcess $ P.shell cmd
+    return exitCode
