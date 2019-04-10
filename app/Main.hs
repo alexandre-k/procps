@@ -17,6 +17,8 @@ import System.IO
 import qualified System.Process.Typed as P
 
 
+data FilterProperty = PName | PID | Command
+
 data Process = Process
   { pname :: String
   , pid :: FilePath
@@ -36,33 +38,36 @@ linuxProcessCommand = "cmdline"
 isInteger :: FilePath -> Bool
 isInteger xs = all isDigit xs
 
-processes :: IO [FilePath]
-processes = do
+runningProcesses :: IO [FilePath]
+runningProcesses = do
   directories <- listDirectory linuxProcessesDir
   return $ filter isInteger directories
 
 listProcesses :: IO [Process]
 listProcesses = do
-  procs <- processes
+  procs <- runningProcesses
   mapM readName procs
 
 isRunning :: String -> IO Bool
 isRunning name = do
-  procs <- listProcesses
-  return $ empty $ findProcessByName name procs
+  processes <- listProcesses
+  return $ empty $ filterProcesses processes PName name
   where
     empty = not . null
 
-findProcessByName :: String -> [Process] -> [Process]
-findProcessByName name procs =
-  filter (hasName . pname) procs
-  where
-    hasName = (isInfixOf name)
+filterProcesses :: [Process] -> FilterProperty -> String -> [Process]
+filterProcesses processes filterProperty keyword =
+  filter (hasKeyword . property) processes
+    where
+      hasKeyword = (isInfixOf keyword)
+      property = case filterProperty of
+        PName -> pname
+        Command -> command
 
-findProcess :: String -> String -> IO [Process]
-findProcess name keyword = do
-  procs <- listProcesses
-  return $ findProcessByName name procs
+findProcess :: FilterProperty -> String -> IO [Process]
+findProcess filterProperty keyword = do
+  processes <- listProcesses
+  return $ filterProcesses processes filterProperty keyword
 
 readName :: FilePath -> IO Process
 readName p = do
@@ -82,7 +87,8 @@ kill process =
       return exitCode
 
 main = do
-  kate <- findProcess "kate" ""
+  kate <- findProcess PName "kate"
+  putStrLn $ show kate
   result <- kill $ kate !! 0
   putStrLn $ show result
   -- p <- processes
