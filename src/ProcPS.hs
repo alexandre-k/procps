@@ -1,14 +1,17 @@
+{-# LANGUAGE OverloadedStrings #-}
 module ProcPS
   ( FilterProperty (..)
   , listProcesses
   , isRunning
   , findProcess
   , kill
+  , start
   )
 where
 
 import Data.Char
 import Data.List
+import qualified Data.String as S
 import Data.String.Utils
 import System.Directory
 import System.Exit
@@ -84,3 +87,6 @@ kill process =
   in do
     exitCode <- P.runProcess $ P.shell cmd
     return exitCode
+
+start :: String -> IO ()
+start cmd = P.runProcess_ $ P.shell cmd
