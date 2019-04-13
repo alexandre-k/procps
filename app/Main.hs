@@ -4,10 +4,12 @@ import Control.Concurrent
 import qualified ProcPS as P
 
 main = do
-  P.start "kate"
-  kate <- P.findProcess P.PName "kate"
+  -- P.start "kate"
+  kate <- P.findProcess P.PName "thunderbird"
   putStrLn $ show kate
-  result <- P.kill $ kate !! 0
-  putStrLn $ show result
+  environ <- P.processEnviron "3654"
+  putStrLn $ show environ
+  -- result <- P.kill $ kate !! 0
+  -- putStrLn $ show result
   -- p <- processes
   -- print p

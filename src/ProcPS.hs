@@ -5,6 +5,7 @@ module ProcPS
   , isRunning
   , findProcess
   , kill
+  , processEnviron
   , start
   )
 where
@@ -38,6 +39,9 @@ linuxProcessName = "comm"
 linuxProcessCommand :: String
 linuxProcessCommand = "cmdline"
 
+linuxProcessEnviron :: String
+linuxProcessEnviron = "environ"
+
 isInteger :: FilePath -> Bool
 isInteger xs = all isDigit xs
 
@@ -49,7 +53,7 @@ runningProcesses = do
 listProcesses :: IO [Process]
 listProcesses = do
   procs <- runningProcesses
-  mapM readName procs
+  mapM readProcessInfo procs
 
 isRunning :: String -> IO Bool
 isRunning name = do
@@ -72,8 +76,8 @@ findProcess filterProperty keyword = do
   processes <- listProcesses
   return $ filterProcesses processes filterProperty keyword
 
-readName :: FilePath -> IO Process
-readName p = do
+readProcessInfo :: FilePath -> IO Process
+readProcessInfo p = do
   name <- readFile processName
   cmd <- readFile processCommand
   return $ Process { pid = p, pname = strip name, command = cmd }
@@ -90,3 +94,22 @@ kill process =
 
 start :: String -> IO ()
 start cmd = P.runProcess_ $ P.shell cmd
+
+formatEnviron :: String -> [(String, String)]
+formatEnviron environ = map (splitAtFirst "=") ((split "\0") environ)
+
+splitAtFirst :: String -> String -> (String, String)
+splitAtFirst sep [] = ("", "")
+splitAtFirst sep str =
+  (key, value)
+  where
+    keyValues = split sep str
+    key = head keyValues
+    value = join "=" (tail keyValues)
+
+processEnviron :: String -> IO [(String, String)]
+processEnviron process = do
+  environ <- readFile procEnviron
+  return $ formatEnviron environ
+  where
+    procEnviron = linuxProcessesDir </> process </> linuxProcessEnviron
