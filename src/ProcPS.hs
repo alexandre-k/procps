@@ -7,9 +7,11 @@ module ProcPS
   , kill
   , processEnviron
   , start
+  , seeCwd
   )
 where
 
+import qualified Data.ByteString.Lazy.Char8 as C8
 import Data.Char
 import Data.List
 import qualified Data.String as S
@@ -41,6 +43,9 @@ linuxProcessCommand = "cmdline"
 
 linuxProcessEnviron :: String
 linuxProcessEnviron = "environ"
+
+linuxProcessCwd :: String
+linuxProcessCwd = "cwd"
 
 isInteger :: FilePath -> Bool
 isInteger xs = all isDigit xs
@@ -113,3 +118,10 @@ processEnviron process = do
   return $ formatEnviron environ
   where
     procEnviron = linuxProcessesDir </> process </> linuxProcessEnviron
+
+seeCwd :: String -> IO String
+seeCwd process = do
+  (out, _) <- P.readProcess_ $ P.shell cmd
+  return $ strip $ C8.unpack $ out
+  where
+    cmd = "readlink " ++ linuxProcessesDir </> process </> linuxProcessCwd
