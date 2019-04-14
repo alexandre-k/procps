@@ -19,10 +19,17 @@ provide patches for it.
 ## Usage examples
 
 How you can get a process and some basic information about it:
-```
-Prelude> import ProcPS as P
-Prelude P> P.findProcess P.PName "thunderbird"
+``` haskell
+Prelude> import Process.Manage as PM
+Prelude P> PM.findProcess PM.PName "thunderbird"
 [Process {pname = "thunderbird", pid = "3654", command = "/usr/lib/thunderbird/thunderbird\NUL"}]
+```
+
+See information about the current directory of a process and the environment variables used for it:
+``` haskell
+Prelude> import Process.Information as PI
+Prelude PI> PI.seeCwd "1873"
+"/home/alex"
 ```
 
 ## TODO
