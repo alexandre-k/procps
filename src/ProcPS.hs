@@ -47,19 +47,23 @@ linuxProcessEnviron = "environ"
 linuxProcessCwd :: String
 linuxProcessCwd = "cwd"
 
+-- helper function to filter processes in /proc
 isInteger :: FilePath -> Bool
 isInteger xs = all isDigit xs
 
+-- list currently running processes as process IDs
 runningProcesses :: IO [FilePath]
 runningProcesses = do
   directories <- listDirectory linuxProcessesDir
   return $ filter isInteger directories
 
+-- list currently running processes as the Process data type
 listProcesses :: IO [Process]
 listProcesses = do
   procs <- runningProcesses
   mapM readProcessInfo procs
 
+-- check if a process is being currently run
 isRunning :: String -> IO Bool
 isRunning name = do
   processes <- listProcesses
@@ -67,6 +71,7 @@ isRunning name = do
   where
     empty = not . null
 
+-- filter a process(es) by its name or a keyword used for its execution
 filterProcesses :: [Process] -> FilterProperty -> String -> [Process]
 filterProcesses processes filterProperty keyword =
   filter (hasKeyword . property) processes
@@ -76,11 +81,14 @@ filterProcesses processes filterProperty keyword =
         PName -> pname
         Command -> command
 
+-- find one or several process by its name or a keyword used at the
+-- command line to execute it.
 findProcess :: FilterProperty -> String -> IO [Process]
 findProcess filterProperty keyword = do
   processes <- listProcesses
   return $ filterProcesses processes filterProperty keyword
 
+-- read information of interest for a given process found in /proc
 readProcessInfo :: FilePath -> IO Process
 readProcessInfo p = do
   name <- readFile processName
@@ -90,6 +98,7 @@ readProcessInfo p = do
     processName = linuxProcessesDir </> p </> linuxProcessName
     processCommand = linuxProcessesDir </> p </> linuxProcessCommand
 
+-- kill a process given a Process data type
 kill :: Process -> IO (ExitCode)
 kill process =
   let cmd = "kill -9 " ++ (pid process)
@@ -97,12 +106,15 @@ kill process =
     exitCode <- P.runProcess $ P.shell cmd
     return exitCode
 
+-- start a process given a command
 start :: String -> IO ()
 start cmd = P.runProcess_ $ P.shell cmd
 
+-- list all environment variables used to run a process
 formatEnviron :: String -> [(String, String)]
 formatEnviron environ = map (splitAtFirst "=") ((split "\0") environ)
 
+-- helper function to show environment variables. Split keys and values at "="
 splitAtFirst :: String -> String -> (String, String)
 splitAtFirst sep [] = ("", "")
 splitAtFirst sep str =
@@ -112,6 +124,7 @@ splitAtFirst sep str =
     key = head keyValues
     value = join "=" (tail keyValues)
 
+-- get environment variables used for a given process
 processEnviron :: String -> IO [(String, String)]
 processEnviron process = do
   environ <- readFile procEnviron
@@ -119,6 +132,7 @@ processEnviron process = do
   where
     procEnviron = linuxProcessesDir </> process </> linuxProcessEnviron
 
+-- show the current working directory of a given process
 seeCwd :: String -> IO String
 seeCwd process = do
   (out, _) <- P.readProcess_ $ P.shell cmd
