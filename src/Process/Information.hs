@@ -6,7 +6,7 @@ module Process.Information
   )
 where
 
-import qualified Process.Internal.Linux as IL
+import qualified Process.Internal.Common as Internal
 import qualified Data.ByteString.Lazy.Char8 as C8
 import Data.Char
 import Data.List
@@ -39,7 +39,7 @@ processEnviron process = do
   environ <- readFile procEnviron
   return $ formatEnviron environ
   where
-    procEnviron = IL.linuxProcessesDir </> process </> IL.linuxProcessEnviron
+    procEnviron = Internal.processesDir </> process </> Internal.processEnviron
 
 -- show the current working directory of a given process
 seeCwd :: String -> IO String
@@ -47,4 +47,4 @@ seeCwd process = do
   (out, _) <- P.readProcess_ $ P.shell cmd
   return $ strip $ C8.unpack $ out
   where
-    cmd = "readlink " ++ IL.linuxProcessesDir </> process </> IL.linuxProcessCwd
+    cmd = "readlink " ++ Internal.processesDir </> process </> Internal.processCwd

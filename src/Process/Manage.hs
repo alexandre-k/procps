@@ -10,7 +10,7 @@ module Process.Manage
   )
 where
 
-import qualified Process.Internal.Linux as IL
+import qualified Process.Internal.Common as Internal
 import qualified Data.ByteString.Lazy.Char8 as C8
 import Data.Char
 import Data.List
@@ -35,8 +35,8 @@ data Process = Process
 -- list currently running processes as process IDs
 runningProcesses :: IO [FilePath]
 runningProcesses = do
-  directories <- listDirectory IL.linuxProcessesDir
-  return $ filter IL.isInteger directories
+  directories <- listDirectory Internal.processesDir
+  return $ filter Internal.isInteger directories
 
 -- list currently running processes as the Process data type
 listProcesses :: IO [Process]
@@ -76,8 +76,8 @@ readProcessInfo p = do
   cmd <- readFile processCommand
   return $ Process { pid = p, pname = strip name, command = cmd }
   where
-    processName = IL.linuxProcessesDir </> p </> IL.linuxProcessName
-    processCommand = IL.linuxProcessesDir </> p </> IL.linuxProcessCommand
+    processName = Internal.processesDir </> p </> Internal.processName
+    processCommand = Internal.processesDir </> p </> Internal.processCommand
 
 -- kill a process given a Process data type
 kill :: Process -> IO (ExitCode)
