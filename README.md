@@ -40,4 +40,5 @@ Prelude PI> PI.seeCwd "1873"
       Process data type
 - [x] Refactor System functions related to processes and function to
       manage processes in different modules
-- [ ] Add skeleton for BSD support and abstract directory names access.
+- [x] Add skeleton for BSD support and abstract directory names access.
+- [ ] Improve abstraction of platform dependent functions
