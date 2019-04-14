@@ -1,16 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
-module ProcPS
+
+module Process.Manage
   ( FilterProperty (..)
   , listProcesses
   , isRunning
   , findProcess
   , kill
-  , processEnviron
   , start
-  , seeCwd
   )
 where
 
+import qualified Process.Internal.Linux as IL
 import qualified Data.ByteString.Lazy.Char8 as C8
 import Data.Char
 import Data.List
@@ -32,30 +32,11 @@ data Process = Process
   } deriving Show
 
 
-linuxProcessesDir :: String
-linuxProcessesDir = "/proc"
-
-linuxProcessName :: String
-linuxProcessName = "comm"
-
-linuxProcessCommand :: String
-linuxProcessCommand = "cmdline"
-
-linuxProcessEnviron :: String
-linuxProcessEnviron = "environ"
-
-linuxProcessCwd :: String
-linuxProcessCwd = "cwd"
-
--- helper function to filter processes in /proc
-isInteger :: FilePath -> Bool
-isInteger xs = all isDigit xs
-
 -- list currently running processes as process IDs
 runningProcesses :: IO [FilePath]
 runningProcesses = do
-  directories <- listDirectory linuxProcessesDir
-  return $ filter isInteger directories
+  directories <- listDirectory IL.linuxProcessesDir
+  return $ filter IL.isInteger directories
 
 -- list currently running processes as the Process data type
 listProcesses :: IO [Process]
@@ -95,8 +76,8 @@ readProcessInfo p = do
   cmd <- readFile processCommand
   return $ Process { pid = p, pname = strip name, command = cmd }
   where
-    processName = linuxProcessesDir </> p </> linuxProcessName
-    processCommand = linuxProcessesDir </> p </> linuxProcessCommand
+    processName = IL.linuxProcessesDir </> p </> IL.linuxProcessName
+    processCommand = IL.linuxProcessesDir </> p </> IL.linuxProcessCommand
 
 -- kill a process given a Process data type
 kill :: Process -> IO (ExitCode)
@@ -109,33 +90,3 @@ kill process =
 -- start a process given a command
 start :: String -> IO ()
 start cmd = P.runProcess_ $ P.shell cmd
-
--- list all environment variables used to run a process
-formatEnviron :: String -> [(String, String)]
-formatEnviron environ = map (splitAtFirst "=") ((split "\0") environ)
-
--- helper function to show environment variables. Split keys and values at "="
-splitAtFirst :: String -> String -> (String, String)
-splitAtFirst sep [] = ("", "")
-splitAtFirst sep str =
-  (key, value)
-  where
-    keyValues = split sep str
-    key = head keyValues
-    value = join "=" (tail keyValues)
-
--- get environment variables used for a given process
-processEnviron :: String -> IO [(String, String)]
-processEnviron process = do
-  environ <- readFile procEnviron
-  return $ formatEnviron environ
-  where
-    procEnviron = linuxProcessesDir </> process </> linuxProcessEnviron
-
--- show the current working directory of a given process
-seeCwd :: String -> IO String
-seeCwd process = do
-  (out, _) <- P.readProcess_ $ P.shell cmd
-  return $ strip $ C8.unpack $ out
-  where
-    cmd = "readlink " ++ linuxProcessesDir </> process </> linuxProcessCwd

@@ -31,5 +31,6 @@ Prelude P> P.findProcess P.PName "thunderbird"
 - [ ] Add tests
 - [ ] Ease the use of function by accepting not only string but the
       Process data type
-- [ ] Refactor System functions related to processes and function to
+- [x] Refactor System functions related to processes and function to
       manage processes in different modules
+- [ ] Add skeleton for BSD support and abstract directory names access.

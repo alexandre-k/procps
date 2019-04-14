@@ -1,15 +1,16 @@
 module Main where
 
 import Control.Concurrent
-import qualified ProcPS as P
+import qualified Process.Information as PI
+import qualified Process.Manage as PM
 
 main = do
   -- P.start "kate"
-  kate <- P.findProcess P.PName "thunderbird"
+  kate <- PM.findProcess PM.PName "thunderbird"
   putStrLn $ show kate
-  environ <- P.processEnviron "3654"
+  environ <- PI.processEnviron "3654"
   putStrLn $ show environ
-  cwd <- P.seeCwd "3654"
+  cwd <- PI.seeCwd "3654"
   putStrLn cwd
 
   -- result <- P.kill $ kate !! 0
