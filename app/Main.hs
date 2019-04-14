@@ -8,7 +8,7 @@ main = do
   -- P.start "kate"
   kate <- PM.findProcess PM.PName "thunderbird"
   putStrLn $ show kate
-  environ <- PI.processEnviron "3654"
+  environ <- PI.listProcessEnviron "3654"
   putStrLn $ show environ
   cwd <- PI.seeCwd "3654"
   putStrLn cwd

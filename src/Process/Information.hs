@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Process.Information
-  ( processEnviron
+  ( listProcessEnviron
   , seeCwd
   )
 where
@@ -34,8 +34,8 @@ splitAtFirst sep str =
     value = join "=" (tail keyValues)
 
 -- get environment variables used for a given process
-processEnviron :: String -> IO [(String, String)]
-processEnviron process = do
+listProcessEnviron :: String -> IO [(String, String)]
+listProcessEnviron process = do
   environ <- readFile procEnviron
   return $ formatEnviron environ
   where
