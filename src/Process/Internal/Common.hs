@@ -20,6 +20,15 @@ processEnviron = Linux.processEnviron
 
 processCwd :: String
 processCwd = Linux.processCwd
+
+cpuInfo :: String
+cpuInfo = Linux.cpuInfo
+
+cpuUsage :: String
+cpuUsage = Linux.cpuInfo
+
+loadAvg :: String
+loadAvg = Linux.loadAvg
 #else
 import qualified Process.Internal.BSD as BSD
 
@@ -38,6 +47,15 @@ processEnviron = BSD.processEnviron
 
 processCwd :: String
 processCwd = BSD.processCwd
+
+cpuInfo :: String
+cpuInfo = BSD.cpuInfo
+
+cpuUsage :: String
+cpuUsage = BSD.cpuUsage
+
+loadAvg :: String
+loadAvg = BSD.loadAvg
 #endif
 
 -- helper function to filter processes in /proc
