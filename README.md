@@ -41,4 +41,4 @@ Prelude PI> PI.seeCwd "1873"
 - [x] Refactor System functions related to processes and function to
       manage processes in different modules
 - [x] Add skeleton for BSD support and abstract directory names access.
-- [ ] Improve abstraction of platform dependent functions
+- [x] Improve abstraction of platform dependent functions
