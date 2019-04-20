@@ -1,6 +1,6 @@
 module Main where
 
-import Control.Concurrent
+import qualified Process.Internal.Common as IC
 import qualified Process.Information as PI
 import qualified Process.Manage as PM
 

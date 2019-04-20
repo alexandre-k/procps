@@ -1,27 +1,44 @@
+{-# LANGUAGE CPP #-}
 module Process.Internal.Common where
 
 import Data.Char
-import System.Info
+#if linux_HOST_OS
 import qualified Process.Internal.Linux as Linux
-import qualified Process.Internal.BSD as BSD
 
-isLinux :: String
-isLinux = os == "linux"
 
 processesDir :: String
-processesDir = if isLinux then Linux.processesDir else BSD.processesDir
+processesDir = Linux.processesDir
 
 processName :: String
-processName = if isLinux then Linux.processName else BSD.processName
+processName = Linux.processName
 
 processCommand :: String
-processCommand = if isLinux then Linux.processName else BSD.processName
+processCommand = Linux.processName
 
 processEnviron :: String
-processEnviron = if isLinux then Linux.processEnviron else BSD.processEnviron
+processEnviron = Linux.processEnviron
 
 processCwd :: String
-processCwd = if isLinux then Linux.processCwd else BSD.processCwd
+processCwd = Linux.processCwd
+#else
+import qualified Process.Internal.BSD as BSD
+
+
+processesDir :: String
+processesDir = BSD.processesDir
+
+processName :: String
+processName = BSD.processName
+
+processCommand :: String
+processCommand = BSD.processName
+
+processEnviron :: String
+processEnviron = BSD.processEnviron
+
+processCwd :: String
+processCwd = BSD.processCwd
+#endif
 
 -- helper function to filter processes in /proc
 isInteger :: FilePath -> Bool
