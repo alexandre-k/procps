@@ -22,14 +22,14 @@ processEnviron pid = Linux.processesDir </> pid </> Linux.processEnviron
 processCwd :: String -> FilePath
 processCwd pid = Linux.processesDir </> pid </> Linux.processCwd
 
-cpuInfo :: String
-cpuInfo = Linux.cpuInfo
+cpuInfo :: FilePath
+cpuInfo = Linux.cpuInfo </> Linux.cpuInfo
 
-cpuUsage :: String
-cpuUsage = Linux.cpuInfo
+cpuUsage :: FilePath
+cpuUsage = Linux.processesDir </> Linux.cpuUsage
 
-loadAvg :: String
-loadAvg = Linux.loadAvg
+loadAvg :: FilePath
+loadAvg = Linux.processesDir </> Linux.loadAvg
 #else
 import qualified Process.Internal.BSD as BSD
 
@@ -49,14 +49,15 @@ processEnviron pid = BSD.processesDir </> pid </> BSD.processEnviron
 processCwd :: String -> FilePath
 processCwd pid = BSD.processesDir </> pid </> BSD.processCwd
 
-cpuInfo :: String
-cpuInfo = BSD.cpuInfo
+cpuInfo :: FilePath
+cpuInfo = BSD.cpuInfo </> BSD.cpuInfo
 
-cpuUsage :: String
-cpuUsage = BSD.cpuUsage
+cpuUsage :: FilePath
+cpuUsage = BSD.processesDir </> BSD.cpuUsage
 
-loadAvg :: String
-loadAvg = BSD.loadAvg
+loadAvg :: FilePath
+loadAvg = BSD.processesDir </> BSD.loadAvg
+
 #endif
 
 -- helper function to filter processes in /proc
