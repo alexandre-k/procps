@@ -1,4 +1,4 @@
-module Process.Internal.Linux where
+module Process.Internal.BSD where
 
 import Data.Char
 

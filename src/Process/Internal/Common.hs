@@ -1,4 +1,4 @@
-module Process.Internal.Linux where
+module Process.Internal.Common where
 
 import Data.Char
 import System.Info
