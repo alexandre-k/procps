@@ -11,15 +11,10 @@ module Process.Manage
 where
 
 import qualified Process.Internal.Common as Internal
-import qualified Data.ByteString.Lazy.Char8 as C8
-import Data.Char
 import Data.List
-import qualified Data.String as S
 import Data.String.Utils
 import System.Directory
 import System.Exit
-import System.FilePath.Posix
-import System.IO
 import qualified System.Process.Typed as P
 
 
@@ -72,12 +67,9 @@ findProcess filterProperty keyword = do
 -- read information of interest for a given process found in /proc
 readProcessInfo :: FilePath -> IO Process
 readProcessInfo p = do
-  name <- readFile processName
-  cmd <- readFile processCommand
+  name <- readFile (Internal.processName p)
+  cmd <- readFile (Internal.processCommand p)
   return $ Process { pid = p, pname = strip name, command = cmd }
-  where
-    processName = Internal.processesDir </> p </> Internal.processName
-    processCommand = Internal.processesDir </> p </> Internal.processCommand
 
 -- kill a process given a Process data type
 kill :: Process -> IO (ExitCode)
