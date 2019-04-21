@@ -26,6 +26,7 @@ dependencies:
 - filepath
 - MissingH
 - typed-process
+- yaml
 
 library:
   source-dirs: src

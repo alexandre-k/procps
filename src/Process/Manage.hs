@@ -20,11 +20,23 @@ import qualified System.Process.Typed as P
 
 data FilterProperty = PName | Command
 
+
 data Process = Process
-  { pname :: String
-  , pid :: FilePath
+  { pname   :: String
+  , pid     :: FilePath
   , command :: String
   } deriving Show
+
+
+data MonitoredProcesses = MonitoredProcess
+  { processs    :: Process
+  , started     :: Bool
+  , stopped     :: Bool
+  , memoryUsage :: Int
+  , uptime      :: Int
+  , status      :: String
+  , logFile     :: FilePath}
+
 
 
 -- list currently running processes as process IDs
@@ -82,3 +94,16 @@ kill process =
 -- start a process given a command
 start :: String -> IO ()
 start cmd = P.runProcess_ $ P.shell cmd
+
+
+monitor :: String -> String -> (Maybe Process)
+monitor name cmd = do
+  exitCode <- P.runProcess $ P.shell cmdWithPID
+  case exitCode of
+    ExitSuccess -> Just Process { pid = (show exitCode) :: FilePath
+                                , pname = name
+                                , command = cmd
+                                }
+    ExitFailure code -> Nothing
+  where
+    cmdWithPID = "(" ++ cmd ++ " &) && (echo $!)"
