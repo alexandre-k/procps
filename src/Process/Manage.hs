@@ -96,14 +96,14 @@ start :: String -> IO ()
 start cmd = P.runProcess_ $ P.shell cmd
 
 
-monitor :: String -> String -> (Maybe Process)
+monitor :: String -> String -> IO (Maybe Process)
 monitor name cmd = do
   exitCode <- P.runProcess $ P.shell cmdWithPID
   case exitCode of
-    ExitSuccess -> Just Process { pid = (show exitCode) :: FilePath
+    ExitSuccess -> return $ Just Process { pid = (show exitCode) :: FilePath
                                 , pname = name
                                 , command = cmd
                                 }
-    ExitFailure code -> Nothing
+    ExitFailure code -> return $ Nothing
   where
     cmdWithPID = "(" ++ cmd ++ " &) && (echo $!)"

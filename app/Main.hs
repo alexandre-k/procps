@@ -1,6 +1,5 @@
 module Main where
 
-import qualified Process.Internal.Common as IC
 import qualified Process.Information as PI
 import qualified Process.Manage as PM
 import qualified Process.Resources as R
