@@ -2,6 +2,7 @@
 module Process.Internal.Common where
 
 import Data.Char
+import System.Directory
 import System.FilePath.Posix
 #if linux_HOST_OS
 import qualified Process.Internal.Linux as Linux
@@ -63,3 +64,13 @@ loadAvg = BSD.processesDir </> BSD.loadAvg
 -- helper function to filter processes in /proc
 isInteger :: FilePath -> Bool
 isInteger xs = all isDigit xs
+
+configDirectory :: IO FilePath
+configDirectory = do
+  home <- getHomeDirectory
+  return $ home </> ".procps"
+
+loggingDirectory :: IO FilePath
+loggingDirectory = do
+  conf <- configDirectory
+  return $ conf </> "logs"

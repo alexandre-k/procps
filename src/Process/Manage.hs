@@ -15,6 +15,7 @@ import Data.List
 import Data.String.Utils
 import System.Directory
 import System.Exit
+import System.FilePath.Posix
 import qualified System.Process.Typed as P
 
 
@@ -28,8 +29,8 @@ data Process = Process
   } deriving Show
 
 
-data MonitoredProcesses = MonitoredProcess
-  { processs    :: Process
+data MonitoredProcess = MonitoredProcess
+  { process    :: Process
   , started     :: Bool
   , stopped     :: Bool
   , memoryUsage :: Int
@@ -95,15 +96,44 @@ kill process =
 start :: String -> IO ()
 start cmd = P.runProcess_ $ P.shell cmd
 
-
-monitor :: String -> String -> IO (Maybe Process)
-monitor name cmd = do
-  exitCode <- P.runProcess $ P.shell cmdWithPID
-  case exitCode of
-    ExitSuccess -> return $ Just Process { pid = (show exitCode) :: FilePath
-                                , pname = name
-                                , command = cmd
+monitorProcess :: String -> String -> IO (MonitoredProcess)
+monitorProcess name cmd = do
+  startedProcess <- startProcess name cmd
+  loggingDirectory <- Internal.loggingDirectory
+  case (startedProcess) of
+    Just process -> do
+      return $ MonitoredProcess { process     = process
+                                , started     = True
+                                , stopped     = False
+                                , memoryUsage = 0
+                                , uptime      = 0
+                                , status      = "Running"
+                                , logFile     = loggingDirectory </> name
                                 }
-    ExitFailure code -> return $ Nothing
+
+    Nothing -> do
+      return $ MonitoredProcess { process = Process { pname = name
+                                                    , pid = "-1"
+                                                    , command = cmd
+                                                    }
+                                , started = False
+                                , stopped = True
+                                , memoryUsage = 0
+                                , uptime = 0
+                                , status = "Stopped"
+                                , logFile = loggingDirectory </> name
+                                }
+
   where
-    cmdWithPID = "(" ++ cmd ++ " &) && (echo $!)"
+
+    startProcess :: String -> String -> IO (Maybe Process)
+    startProcess name cmd = do
+      exitCode <- P.runProcess $ P.shell cmdWithPID
+      case exitCode of
+          ExitSuccess -> return $ Just Process { pid = (show exitCode) :: FilePath
+                                      , pname = name
+                                      , command = cmd
+                                      }
+          ExitFailure code -> return $ Nothing
+      where
+          cmdWithPID = "(" ++ cmd ++ " &) && (echo $!)"
