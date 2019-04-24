@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module Process.Manage
   ( FilterProperty (..)
@@ -11,13 +12,17 @@ module Process.Manage
 where
 
 import qualified Process.Internal.Common as Internal
+import Data.ByteString (ByteString)
 import Data.List
 import Data.String.Utils
+import qualified Data.Yaml as Y
+import Data.Yaml (FromJSON(..), (.:))
 import System.Directory
 import System.Exit
 import System.FilePath.Posix
 import qualified System.Process.Typed as P
-
+import Control.Applicative
+import Prelude
 
 data FilterProperty = PName | Command
 
@@ -27,6 +32,14 @@ data Process = Process
   , pid     :: FilePath
   , command :: String
   } deriving Show
+
+instance FromJSON Process where
+  parseJSON (Y.Object v) =
+    Process <$>
+    v .: "pname" <*>
+    v .: "pid" <*>
+    v .: "command"
+  parseJSON _ = fail "Expected object for Process value"
 
 
 data MonitoredProcess = MonitoredProcess
@@ -38,6 +51,17 @@ data MonitoredProcess = MonitoredProcess
   , status      :: String
   , logFile     :: FilePath}
 
+instance FromJSON MonitoredProcess where
+  parseJSON (Y.Object v) =
+    MonitoredProcess <$>
+    v .: "process" <*>
+    v .: "started" <*>
+    v .: "stopped" <*>
+    v .: "memoryUsage" <*>
+    v .: "uptime" <*>
+    v .: "status" <*>
+    v .: "logFile"
+  parseJSON _ = fail "Expected object for MonitoredProcess value"
 
 
 -- list currently running processes as process IDs
