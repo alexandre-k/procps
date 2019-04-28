@@ -68,9 +68,15 @@ isInteger xs = all isDigit xs
 configDirectory :: IO FilePath
 configDirectory = do
   home <- getHomeDirectory
+  -- createDirectory $ home </> ".procps"
   return $ home </> ".procps"
 
 loggingDirectory :: IO FilePath
 loggingDirectory = do
   conf <- configDirectory
   return $ conf </> "logs"
+
+configFile :: IO FilePath
+configFile = do
+  confDir <- configDirectory
+  return $ confDir </> "processes.json"

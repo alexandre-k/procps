@@ -1,8 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 
 module Process.Manage
   ( FilterProperty (..)
+  , createMonitoredProcess
   , listProcesses
   , isRunning
   , findProcess
@@ -12,57 +15,33 @@ module Process.Manage
 where
 
 import qualified Process.Internal.Common as Internal
-import Data.ByteString (ByteString)
+import Data.Aeson
+import qualified Data.ByteString.Lazy as B
 import Data.List
 import Data.String.Utils
-import qualified Data.Yaml as Y
-import Data.Yaml (FromJSON(..), (.:))
+import GHC.Generics
 import System.Directory
 import System.Exit
 import System.FilePath.Posix
 import qualified System.Process.Typed as P
-import Control.Applicative
-import Prelude
 
 data FilterProperty = PName | Command
-
 
 data Process = Process
   { pname   :: String
   , pid     :: FilePath
   , command :: String
-  } deriving Show
-
-instance FromJSON Process where
-  parseJSON (Y.Object v) =
-    Process <$>
-    v .: "pname" <*>
-    v .: "pid" <*>
-    v .: "command"
-  parseJSON _ = fail "Expected object for Process value"
-
+  } deriving (Generic, Show, ToJSON, FromJSON)
 
 data MonitoredProcess = MonitoredProcess
-  { process    :: Process
+  { name        :: String
+  , process     :: Process
   , started     :: Bool
   , stopped     :: Bool
   , memoryUsage :: Int
   , uptime      :: Int
   , status      :: String
-  , logFile     :: FilePath}
-
-instance FromJSON MonitoredProcess where
-  parseJSON (Y.Object v) =
-    MonitoredProcess <$>
-    v .: "process" <*>
-    v .: "started" <*>
-    v .: "stopped" <*>
-    v .: "memoryUsage" <*>
-    v .: "uptime" <*>
-    v .: "status" <*>
-    v .: "logFile"
-  parseJSON _ = fail "Expected object for MonitoredProcess value"
-
+  , logFile     :: FilePath} deriving (Generic, Show, ToJSON, FromJSON)
 
 -- list currently running processes as process IDs
 runningProcesses :: IO [FilePath]
@@ -120,13 +99,16 @@ kill process =
 start :: String -> IO ()
 start cmd = P.runProcess_ $ P.shell cmd
 
-monitorProcess :: String -> String -> IO (MonitoredProcess)
-monitorProcess name cmd = do
+-- start a process as a monitored process given a unique name and a
+-- command to start it
+monitoredProcess :: String -> String -> IO MonitoredProcess
+monitoredProcess name cmd = do
   startedProcess <- startProcess name cmd
   loggingDirectory <- Internal.loggingDirectory
   case (startedProcess) of
     Just process -> do
-      return $ MonitoredProcess { process     = process
+      return $ MonitoredProcess { name        = name
+                                , process     = process
                                 , started     = True
                                 , stopped     = False
                                 , memoryUsage = 0
@@ -136,7 +118,8 @@ monitorProcess name cmd = do
                                 }
 
     Nothing -> do
-      return $ MonitoredProcess { process = Process { pname = name
+      return $ MonitoredProcess { name = name
+                                , process = Process { pname = name
                                                     , pid = "-1"
                                                     , command = cmd
                                                     }
@@ -161,3 +144,14 @@ monitorProcess name cmd = do
           ExitFailure code -> return $ Nothing
       where
           cmdWithPID = "(" ++ cmd ++ " &) && (echo $!)"
+
+
+createMonitoredProcess :: String -> String -> IO ()
+createMonitoredProcess name cmd = do
+  process <- monitoredProcess name cmd
+  addProcess process
+  where
+    addProcess :: MonitoredProcess -> IO ()
+    addProcess process = do
+      confFile <- Internal.configFile
+      B.writeFile confFile (encode process)
