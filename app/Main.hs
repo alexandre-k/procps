@@ -4,12 +4,13 @@ module Main where
 
 import qualified Process.Information as PI
 import qualified Process.Manage as PM
+import qualified Process.Monitor as PMO
 import qualified Process.Resources as R
 
 
 main = do
   -- P.start "kate"
-  PM.createMonitoredProcess "firefox" "firefox"
+  PMO.create "thunderbird" "thunderbird"
   cpuUsage <- R.cpuUsage
   putStrLn $ show cpuUsage
   kate <- PM.findProcess PM.PName "thunderbird"
