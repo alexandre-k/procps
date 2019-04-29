@@ -9,7 +9,7 @@ import qualified Process.Resources as R
 
 main = do
   -- P.start "kate"
-  PM.createMonitoredProcess "thunderbird" "thunderbird"
+  PM.createMonitoredProcess "firefox" "firefox"
   cpuUsage <- R.cpuUsage
   putStrLn $ show cpuUsage
   kate <- PM.findProcess PM.PName "thunderbird"

@@ -6,6 +6,7 @@
 module Process.Manage
   ( FilterProperty (..)
   , createMonitoredProcess
+  , stopMonitoredProcess
   , listProcesses
   , isRunning
   , findProcess
@@ -15,6 +16,7 @@ module Process.Manage
 where
 
 import qualified Process.Internal.Common as Internal
+import Control.Monad as M
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
 import Data.List
@@ -141,17 +143,54 @@ monitoredProcess name cmd = do
                                       , pname = name
                                       , command = cmd
                                       }
-          ExitFailure code -> return $ Nothing
+          ExitFailure _ -> return $ Nothing
       where
           cmdWithPID = "(" ++ cmd ++ " &) && (echo $!)"
 
 
 createMonitoredProcess :: String -> String -> IO ()
 createMonitoredProcess name cmd = do
+  unique <- isUnique name
+  M.guard $ unique
   process <- monitoredProcess name cmd
-  addProcess process
+  addMonitoredProcess process
   where
-    addProcess :: MonitoredProcess -> IO ()
-    addProcess process = do
+
+    isUnique :: String -> IO Bool
+    isUnique processName = do
       confFile <- Internal.configFile
+      processes <- B.readFile confFile
+      case decode processes of
+        Just dprocesses -> return $ not $ processName `elem` (map pname dprocesses)
+        Nothing -> return True
+
+
+stopMonitoredProcess :: String -> IO ()
+stopMonitoredProcess name = do
+  putStrLn "stop monitored process"
+  processes <- listMonitoredProcesses
+  case processes of
+    Just p -> putStrLn $ show p
+    Nothing -> putStrLn "nothing"
+  -- where
+  --   removeProcess :: String -> MonitoredProcess
+  --   removeProcess name = do
+  --     putStrLn "remove Process"
+
+
+listMonitoredProcesses :: IO (Maybe [MonitoredProcess])
+listMonitoredProcesses = do
+  confFile <- Internal.configFile
+  processes <- B.readFile confFile
+  return $ decode processes
+
+
+addMonitoredProcess :: MonitoredProcess -> IO ()
+addMonitoredProcess process = do
+  alreadyExistingProcesses <- listMonitoredProcesses
+  confFile <- Internal.configFile
+  case alreadyExistingProcesses of
+    Just aprocesses ->
+      B.writeFile confFile (encode $ process:aprocesses)
+    Nothing ->
       B.writeFile confFile (encode process)

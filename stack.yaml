@@ -33,7 +33,6 @@ resolver: lts-13.15
 #  - auto-update
 #  - wai
 packages:
-- .
 # Dependency packages to be pulled from upstream that are not in the resolver
 # using the same syntax as the packages field.
 # (e.g., acme-missiles-0.3)
@@ -63,4 +62,4 @@ packages:
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor
 
-extensions: CPP
+# extensions:
