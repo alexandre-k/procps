@@ -26,7 +26,10 @@ dependencies:
 - directory
 - filepath
 - MissingH
+- optparse-applicative
+- scotty
 - typed-process
+
 
 library:
   source-dirs: src
