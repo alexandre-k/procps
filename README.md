@@ -12,9 +12,25 @@ It should be convenient, easy to use.
 
 Being currently in its early stages of development, the API is subject
 to changes. It supports Linux only currently. I may add a support for
-BSD OSes, but I will unlikely support Windows, unless someone want to
-provide patches for it.
+BSD OSes, but I will likely support Windows in the future but with
+tests only conducted in a virtual machine.
 
+
+## Command line utilities
+
+Several actions are available via the command line:
+- procps start-server
+Just do ctrl-c to stop it.
+
+- procps create "process id" "process command"
+To create a monitored process through the API or the CLI.
+
+- procps find "process name"
+To find a process not monitored through the CLI or
+the API. Typically any kind of process already started.
+
+- procps show "process id"
+To show a process you created through the API or the CLI.
 
 ## Usage examples
 

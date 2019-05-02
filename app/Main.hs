@@ -1,6 +1,6 @@
 #!/usr/bin/env stack
 {-# LANGUAGE OverloadedStrings #-}
--- {-# LANGUAGE ScopedTypeVariable #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Main where
 
 import qualified Process.Information as PI
@@ -19,7 +19,7 @@ data Options = Options
   { optCommand :: !Server
   }
 
-data Manage = Create String String | Stop String
+data Manage = Create String String
 data Info = Find String
 data Server = Start String | Stop
 
@@ -28,14 +28,23 @@ main :: IO ()
 main = do
   (opts :: Options) <- execParser optsParser
   case optCommand opts of
-    Start ipAddr -> start ipAddr
+    Start ipAddr -> start
   where
     optsParser :: ParserInfo Options
     optsParser =
       info
+        (helper <*> options)
         (fullDesc <> progDesc "Command line application to parse processes" <>
          header
            "Targeted for Linux, BSD and Windows platforms")
+    options :: Parser Options
+    options =
+      Options <$> switch (long "flag" <> help "flag help message") <*>
+      hsubparser (start <> stop)
+    start =
+      command "start server" (info "start server")
+    stop =
+      command "stop" (info (pure Stop) (progDesc "stop something"))
 
 
 
