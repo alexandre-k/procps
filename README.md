@@ -16,21 +16,39 @@ BSD OSes, but I will likely support Windows in the future but with
 tests only conducted in a virtual machine.
 
 
-## Command line utilities
+## Command line interface
 
 Several actions are available via the command line:
-- procps start-server
-Just do ctrl-c to stop it.
+- Process Management visualization tool.
+To visually manage processes, you can use start the web interface:
 
-- procps create "process id" "process command"
+``` haskell
+procps start-server
+```
+It will start a web server to show currently monitored
+processes. Processes are monitored through the API or the CLI. Just do
+ctrl-c to stop it.
+
+Through the CLI, you can also show a process you created:
+``` haskell
+procps show "process id"
+```
+
+Or list all processes currently being monitored:
+``` haskell
+procps list-all
+```
+
+- Monitored processes creation
+``` haskell
+procps create "process id" "process command"
+```
 To create a monitored process through the API or the CLI.
 
-- procps find "process name"
-To find a process not monitored through the CLI or
-the API. Typically any kind of process already started.
-
-- procps show "process id"
-To show a process you created through the API or the CLI.
+- Search utilities to find currently working processes.
+``` haskell
+procps find "process name"
+```
 
 ## Usage examples
 
