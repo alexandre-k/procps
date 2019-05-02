@@ -8,13 +8,6 @@ of development, the purpose is to enable people to use this library like
 
 It should be convenient, easy to use.
 
-## API
-
-Being currently in its early stages of development, the API is subject
-to changes. It supports Linux only currently. I may add a support for
-BSD OSes, but I will likely support Windows in the future but with
-tests only conducted in a virtual machine.
-
 
 ## Command line interface
 
@@ -49,8 +42,17 @@ To create a monitored process through the API or the CLI.
 ``` haskell
 procps find "process name"
 ```
+## API
 
-## Usage examples
+### Summary
+
+Being currently in its early stages of development, the API is subject
+to changes. It supports Linux only currently. I may add a support for
+BSD OSes, but I will likely support Windows in the future but with
+tests only conducted in a virtual machine.
+
+
+### Usage examples
 
 How you can get a process and some basic information about it:
 ``` haskell
