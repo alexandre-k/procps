@@ -9,43 +9,48 @@ import qualified Process.Monitor as PMO
 import qualified Process.Resources as R
 import Data.Semigroup ((<>))
 import Options.Applicative
-import Process.Web.Server
+import Process.Web.Server as S
 
 -- start server
 -- create process
 -- show cpu usage of a process
 -- show all processes with list all
-data Options = Options
-  { optCommand :: !Server
-  }
 
-data Manage = Create String String
-data Info = Find String
-data Server = Start String | Stop
+data Manager = Manager
+  { start :: String
+  -- , show :: String
+  -- , create :: [String]
+  -- , find :: String
+  } deriving (Show)
 
+app :: Parser Manager
+app = Manager
+  <$> strOption
+      ( long "start-server"
+      <> metavar "[ip address]:port"
+      <> help "Start a web server to visualize processes through a web interface"
+      )
+
+parse :: Manager -> IO ()
+parse cmd = S.start
 
 main :: IO ()
 main = do
-  (opts :: Options) <- execParser optsParser
-  case optCommand opts of
-    Start ipAddr -> start
+  parse =<< execParser options
   where
-    optsParser :: ParserInfo Options
-    optsParser =
-      info
-        (helper <*> options)
-        (fullDesc <> progDesc "Command line application to parse processes" <>
-         header
-           "Targeted for Linux, BSD and Windows platforms")
-    options :: Parser Options
-    options =
-      Options <$> switch (long "flag" <> help "flag help message") <*>
-      hsubparser (start <> stop)
-    start =
-      command "start server" (info "start server")
-    stop =
-      command "stop" (info (pure Stop) (progDesc "stop something"))
-
+    options = info (app <**> helper)
+      (fullDesc
+       <> progDesc "Command line application to parse processes"
+       <> header "Targeted for Linux, BSD and Windows platforms")
+    -- options :: Parser Manager
+    -- options = Manager <$>
+    --   <> command "show" (info app (progDesc "Show a monitored process given its unique identified"))
+    --   <> command "list-all" (info app (progDesc "Show all monitored processes"))
+    --   <> command "create" (info app (progDesc "Create a process managed through the API or the CLI"))
+    --   <> command "find" (info app (progDesc "Find a process given its name"))
+    --   <> commandGroup "Process anagement commands:"
+    --   <> hidden
+    --   )
 
 
 -- main = do
