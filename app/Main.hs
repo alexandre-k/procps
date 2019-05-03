@@ -18,9 +18,10 @@ import Process.Web.Server as S
 
 data Manager = Manager
   { start :: String
-  -- , show :: String
-  -- , create :: [String]
-  -- , find :: String
+  , show :: String
+  , listAll :: Bool
+  , create :: String
+  , find :: String
   } deriving (Show)
 
 app :: Parser Manager
@@ -30,9 +31,28 @@ app = Manager
       <> metavar "[ip address]:port"
       <> help "Start a web server to visualize processes through a web interface"
       )
+  <*> strOption
+      ( long "show"
+      <> metavar "process name"
+      <> help "Show a monitored process given its unique identifier"
+      )
+  <*> switch
+      ( long "list-all"
+      <> help "Show all monitored processes"
+      )
+  <*> strOption
+      ( long "create"
+      <> metavar "command to run a process"
+      <> help "Create a process managed through the API or the CLI"
+      )
+  <*> strOption
+      ( long "find"
+      <> metavar "name of a process"
+      <> help "Find a process given its name"
+      )
 
 parse :: Manager -> IO ()
-parse cmd = S.start
+parse cmd = print cmd
 
 main :: IO ()
 main = do
@@ -42,22 +62,10 @@ main = do
       (fullDesc
        <> progDesc "Command line application to parse processes"
        <> header "Targeted for Linux, BSD and Windows platforms")
-    -- options :: Parser Manager
-    -- options = Manager <$>
-    --   <> command "show" (info app (progDesc "Show a monitored process given its unique identified"))
-    --   <> command "list-all" (info app (progDesc "Show all monitored processes"))
-    --   <> command "create" (info app (progDesc "Create a process managed through the API or the CLI"))
-    --   <> command "find" (info app (progDesc "Find a process given its name"))
-    --   <> commandGroup "Process anagement commands:"
-    --   <> hidden
-    --   )
-
 
 -- main = do
 --   -- P.start "kate"
 --   PMO.create "thunderbird" "thunderbird"
---   cpuUsage <- R.cpuUsage
---   putStrLn $ show cpuUsage
 --   kate <- PM.findProcess PM.PName "thunderbird"
 --   putStrLn $ show kate
 --   environ <- PI.listProcessEnviron "3654"
