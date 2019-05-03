@@ -1,15 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Process.Web.Server where
+module Process.Web.Server
+  (start)
+where
 
 import Web.Scotty
 import Data.Default.Class (def)
-import Data.Monoid (mconcat)
+import Data.String (fromString)
 import qualified Network.Wai.Handler.Warp as W
 
 
-customSettings :: Options
-customSettings = def { verbose = 1
-                     , settings = W.setHost "127.0.0.1" $ settings def
+customSettings :: String -> Int -> Options
+customSettings ip port = def { verbose = 1
+                     , settings = W.setHost (fromString ip) $ settings def
                      }
 
 
@@ -18,8 +20,8 @@ customSettings = def { verbose = 1
 --   get "/" $ text "hello world"
 
 
-start :: IO ()
-start = scottyOpts customSettings $ do
+start :: String -> Int -> IO ()
+start ip port = scottyOpts (customSettings ip port) $ do
   get "/" $ text "hello world"
 
 

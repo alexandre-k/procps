@@ -68,19 +68,19 @@ server = Server
       <> help "Port used to listen to connections"
       )
 
-parseCommand :: Parser Server
-parseCommand = subparser $
+parseServer :: Parser Server
+parseServer = subparser $
   command "start-server" (withInfo server "Start a web server to visualize processes through a web interface")
 
 withInfo :: Parser a -> String -> ParserInfo a
 withInfo opts desc = info (helper <*> opts) $ progDesc desc
 
 parse :: Server -> IO ()
-parse cmd = print cmd
+parse server = S.start (ip server) (port server)
 
 main :: IO ()
 main = do
-  parse =<< execParser (withInfo parseCommand "Command line application to parse processes")
+  parse =<< execParser (withInfo parseServer "Command line application to parse processes")
 
 -- main = do
 --   -- P.start "kate"
