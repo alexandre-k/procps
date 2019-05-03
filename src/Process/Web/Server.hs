@@ -20,18 +20,20 @@ data Server = Server
 
 customSettings :: String -> Int -> Options
 customSettings ip port = def { verbose = 1
-                     , settings = W.setHost (fromString ip) $ settings def
-                     }
+                             , settings = W.setHost (fromString ip) $ settings def
+                             }
 
 
 -- start :: String -> IO ()
 -- start ipAddr = scottyOpts $ customSettings ipAddr $ do
 --   get "/" $ text "hello world"
 
+serveStaticFiles :: ScottyM ()
+serveStaticFiles = do
+  get "/" $ file "./static/html/index.html"
 
 start :: Server -> IO ()
-start (Server ip port)= scottyOpts (customSettings ip port) $ do
-  get "/" $ text "hello world"
+start (Server ip port) = scottyOpts (customSettings ip port) $ serveStaticFiles
 
 
 stop :: IO ()
