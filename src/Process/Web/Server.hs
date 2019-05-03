@@ -24,17 +24,9 @@ customSettings ip port = def { verbose = 1
                              }
 
 
--- start :: String -> IO ()
--- start ipAddr = scottyOpts $ customSettings ipAddr $ do
---   get "/" $ text "hello world"
-
 serveStaticFiles :: ScottyM ()
 serveStaticFiles = do
   get "/" $ file "./static/html/index.html"
 
 start :: Server -> IO ()
 start (Server ip port) = scottyOpts (customSettings ip port) $ serveStaticFiles
-
-
-stop :: IO ()
-stop = putStrLn "Stop"
