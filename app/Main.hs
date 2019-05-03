@@ -11,57 +11,76 @@ import Data.Semigroup ((<>))
 import Options.Applicative
 import Process.Web.Server as S
 
--- start server
--- create process
--- show cpu usage of a process
--- show all processes with list all
 
-data Manager = Manager
-  { start :: String
-  , show :: String
-  , listAll :: Bool
-  , create :: String
-  , find :: String
+data Command =
+  StartServer
+  -- , show :: String
+  -- , listAll :: Bool
+  -- , create :: String
+  -- , find :: String
+
+data Server = Server
+  { ip :: String
+  , port :: Int
   } deriving (Show)
 
-app :: Parser Manager
-app = Manager
+-- app :: Parser Manager
+-- app = Manager
+--   <$> strOption
+--       ( long "start-server"
+--       <> metavar "[ip address]:port"
+--       <> help "Start a web server to visualize processes through a web interface"
+--       )
+--   <*> strOption
+--       ( long "show"
+--       <> metavar "process name"
+--       <> help "Show a monitored process given its unique identifier"
+--       )
+--   <*> switch
+--       ( long "list-all"
+--       <> help "Show all monitored processes"
+--       )
+--   <*> strOption
+--       ( long "create"
+--       <> metavar "command to run a process"
+--       <> help "Create a process managed through the API or the CLI"
+--       )
+--   <*> strOption
+--       ( long "find"
+--       <> metavar "name of a process"
+--       <> help "Find a process given its name"
+--       )
+
+server :: Parser Server
+server = Server
   <$> strOption
-      ( long "start-server"
-      <> metavar "[ip address]:port"
-      <> help "Start a web server to visualize processes through a web interface"
+      ( long "ip"
+      <> short 'i'
+      <> metavar "x.x.x.x"
+      <> value "127.0.0.1"
+      <> help "IP address used for serving files"
       )
-  <*> strOption
-      ( long "show"
-      <> metavar "process name"
-      <> help "Show a monitored process given its unique identifier"
-      )
-  <*> switch
-      ( long "list-all"
-      <> help "Show all monitored processes"
-      )
-  <*> strOption
-      ( long "create"
-      <> metavar "command to run a process"
-      <> help "Create a process managed through the API or the CLI"
-      )
-  <*> strOption
-      ( long "find"
-      <> metavar "name of a process"
-      <> help "Find a process given its name"
+  <*> option auto
+      ( long "port"
+      <> short 'p'
+      <> metavar "int"
+      <> value 3000
+      <> help "Port used to listen to connections"
       )
 
-parse :: Manager -> IO ()
+parseCommand :: Parser Server
+parseCommand = subparser $
+  command "start-server" (withInfo server "Start a web server to visualize processes through a web interface")
+
+withInfo :: Parser a -> String -> ParserInfo a
+withInfo opts desc = info (helper <*> opts) $ progDesc desc
+
+parse :: Server -> IO ()
 parse cmd = print cmd
 
 main :: IO ()
 main = do
-  parse =<< execParser options
-  where
-    options = info (app <**> helper)
-      (fullDesc
-       <> progDesc "Command line application to parse processes"
-       <> header "Targeted for Linux, BSD and Windows platforms")
+  parse =<< execParser (withInfo parseCommand "Command line application to parse processes")
 
 -- main = do
 --   -- P.start "kate"
