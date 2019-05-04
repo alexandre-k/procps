@@ -6,10 +6,12 @@ module Process.Web.Server
   )
 where
 
-import Web.Scotty
 import Data.Default.Class (def)
 import Data.String (fromString)
 import qualified Network.Wai.Handler.Warp as W
+import Process.Web.Internal.Index  (index)
+import Text.Blaze.Html.Renderer.Text (renderHtml)
+import Web.Scotty
 
 
 data Server = Server
@@ -24,9 +26,9 @@ customSettings ip port = def { verbose = 1
                              }
 
 
-serveStaticFiles :: ScottyM ()
-serveStaticFiles = do
-  get "/" $ file "./static/html/index.html"
+dashboard :: ScottyM ()
+dashboard = do
+  get "/" $ html (renderHtml index)
 
 start :: Server -> IO ()
-start (Server ip port) = scottyOpts (customSettings ip port) $ serveStaticFiles
+start (Server ip port) = scottyOpts (customSettings ip port) $ dashboard
