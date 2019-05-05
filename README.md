@@ -42,6 +42,14 @@ To create a monitored process through the API or the CLI.
 ``` haskell
 procps find "process name"
 ```
+
+## Web Interface
+
+You can handle processes if you want with a web interface. You will
+get a quick summary from there. You'll be able also to start, restart
+or stop processes at will.
+
+
 ## API
 
 ### Summary
@@ -70,6 +78,10 @@ Prelude PI> PI.seeCwd "1873"
 
 ## TODO
 
+- [ ] Log everything from processes
+- [ ] Complete the integration of functions with the command line interface
+- [ ] See the logs from the web interface
+- [ ] Start, restart and stop from web interface
 - [ ] Improve documentation
 - [ ] Add tests
 - [ ] Ease the use of function by accepting not only string but the
