@@ -49,6 +49,8 @@ You can handle processes if you want with a web interface. You will
 get a quick summary from there. You'll be able also to start, restart
 or stop processes at will.
 
+![](web_interface.png)
+
 
 ## API
 
