@@ -4,7 +4,10 @@
 
 module Process.Monitor
   ( FilterProperty (..)
+  , MonitoredProcess (..)
+  , Process (..)
   , create
+  , listAll
   , stop
   )
 where

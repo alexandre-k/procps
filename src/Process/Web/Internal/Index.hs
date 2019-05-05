@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Process.Web.Internal.Index where
 
+import Control.Monad (forM_)
+import Data.String (fromString)
 import Prelude hiding (div, head, id, span)
 import Text.Blaze.Html5 (
   (!),
@@ -27,6 +29,7 @@ import Text.Blaze.Html5.Attributes (
   id,
   rel,
   src)
+import Process.Monitor (MonitoredProcess(..), Process(..), listAll)
 -- import Text.Blaze.Html.Renderer.Text as HRT
 -- import Text.Blaze.Html.Renderer.String as HRS
 -- import Text.Blaze.Internal as BI
@@ -49,21 +52,70 @@ page = do
   div ! class_ "row" $ do
     div ! class_ "col s12 m12" $ do
         header'
-        dashboard
+        dashboard [firefox, thunderbird]
         footer'
 
 
-dashboard :: Html
-dashboard = do
+dashboard :: [MonitoredProcess] -> Html
+dashboard processes = do
   div ! class_ "row" $ do
     div ! class_ "col s6 m6" $ do
-      div ! class_ "card blue-grey darken-1" $ do
-        div ! class_ "card-content white-text" $ do
-          span ! class_ "card-title" $ "Firefox"
-          p "Process Information"
-        div ! class_ "card-action" $ do
-          a ! href "#" $ "restart process"
-          a ! href "#" $ "stop process"
+      forM_ processes card
+
+
+-- processCard :: IO Html
+-- processCard = do
+--   processes <- listAll
+--   case processes of
+--     Just procs -> return $ card "Firefox" "A web browser"
+--     Nothing -> return $ card "Firefox" "A web browser"
+
+
+firefox :: MonitoredProcess
+firefox = MonitoredProcess
+  { name        = "Firefox"
+  , process     = Process { pname = "firefox", pid = "9324", command = "/usr/bin/firefox"}
+  , started     = True
+  , stopped     = False
+  , memoryUsage = 0
+  , uptime      = 0
+  , status      = "started"
+  , logFile     = "/home/laozi/mproc"
+  }
+
+
+thunderbird :: MonitoredProcess
+thunderbird = MonitoredProcess
+  { name        = "Thunderbird"
+  , process     = Process { pname = "thunderbird", pid = "121", command = "/usr/bin/thunderbird"}
+  , started     = False
+  , stopped     = True
+  , memoryUsage = 0
+  , uptime      = 0
+  , status      = "stopped"
+  , logFile     = "/home/laozi/mproc"
+  }
+
+
+card :: MonitoredProcess -> Html
+card mproc = do
+  div ! class_ "card blue-grey darken-1" $ do
+    div ! class_ "card-content white-text" $ do
+        span ! class_ "card-title" $ fromString (name mproc)
+        p $ fromString ("PID: " ++ (pid (process mproc)))
+        p $ fromString ("Current state: " ++ (status mproc))
+        p $ fromString ("Log file: " ++ (logFile mproc))
+        p $ fromString ("Memory usage: " ++ show (memoryUsage mproc))
+        p $ fromString ("Uptime: " ++ show (uptime mproc))
+    div ! class_ "card-action" $ do
+      processState (status mproc)
+    where
+      processState :: String -> Html
+      processState "stopped" = do
+        a ! href "#" $ "start"
+      processState _ = do
+        a ! href "#" $ "restart"
+        a ! href "#" $ "stop"
 
 
 header' :: Html
