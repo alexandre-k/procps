@@ -13,8 +13,9 @@ import Text.Blaze.Html5 (
   docTypeHtml,
   footer,
   h1,
-  h3,
+  h5,
   head,
+  i,
   li,
   link,
   nav,
@@ -41,6 +42,7 @@ index = do
       link ! rel "stylesheet" ! href "https://fonts.googleapis.com/css?family=Roboto:300,400,500"
       link ! rel "stylesheet" ! href "https://fonts.googleapis.com/icon?family=Material+Icons"
       link ! rel "stylesheet" ! href "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+      link ! rel "stylesheet" ! href "https://use.fontawesome.com/releases/v5.8.1/css/all.css"
       script ! src "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js" $ mempty
       title "ProcPS dashboard"
     body $ do
@@ -49,18 +51,16 @@ index = do
 
 page :: Html
 page = do
-  div ! class_ "row" $ do
-    div ! class_ "col s12 m12" $ do
-        header'
-        dashboard [firefox, thunderbird]
-        footer'
+  div ! class_ "container" $ do
+    header'
+    dashboard [firefox, thunderbird]
+    footer'
 
 
 dashboard :: [MonitoredProcess] -> Html
 dashboard processes = do
   div ! class_ "row" $ do
-    div ! class_ "col s6 m6" $ do
-      forM_ processes card
+    forM_ processes card
 
 
 -- processCard :: IO Html
@@ -99,17 +99,18 @@ thunderbird = MonitoredProcess
 
 card :: MonitoredProcess -> Html
 card mproc = do
-  div ! class_ "card blue-grey darken-1" $ do
-    div ! class_ "card-content white-text" $ do
+  div ! class_ "col s6 m6" $ do
+    div ! class_ "card blue-grey darken-1" $ do
+      div ! class_ "card-content white-text" $ do
         span ! class_ "card-title" $ fromString (name mproc)
         p $ fromString ("PID: " ++ (pid (process mproc)))
         p $ fromString ("Current state: " ++ (status mproc))
         p $ fromString ("Log file: " ++ (logFile mproc))
         p $ fromString ("Memory usage: " ++ show (memoryUsage mproc))
         p $ fromString ("Uptime: " ++ show (uptime mproc))
-    div ! class_ "card-action" $ do
-      processState (status mproc)
-    where
+      div ! class_ "card-action" $ do
+        processState (status mproc)
+      where
       processState :: String -> Html
       processState "stopped" = do
         a ! href "#" $ "start"
@@ -120,16 +121,18 @@ card mproc = do
 
 header' :: Html
 header' = do
-  nav $ do
-    div ! class_ "brand-logo" $ "ProcPS Dashboard"
-    -- ul ! id "nav-mobile" ! class_ "right hide-on-med-and-down" $ do
-    --   li $ a ! href "#" $ "Home"
-
+  nav ! class_ "nav-wrapper" $ do
+    a ! class_ "brand-logo center" ! href "/" $ "ProcPS Dashboard"
 
 footer' :: Html
 footer' = do
   footer ! class_ "page-footer" $ do
     div ! class_ "container" $ do
       div ! class_ "row" $ do
-        div ! class_ "col 16 s12" $ do
-          h3 ! class_ "white-text" $ "footer"
+        div ! class_ "col 12 s12" $ do
+          h5 ! class_ "white-text" $ "ProcPS"
+          p ! class_ "grey-text text-lighten-4" $ "Any issue should be reported here:"
+          a ! href "https://github.com/alexandre-k/procps/issues" $ "-> issues on the Github page"
+    div ! class_ "footer-copyright" $ do
+      div ! class_ "container" $ do
+        i ! class_ "far fa-copyright" $ "Licensed under BSD 3-Clause"
