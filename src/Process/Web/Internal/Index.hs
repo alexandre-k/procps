@@ -35,8 +35,8 @@ import Process.Monitor (MonitoredProcess(..), Process(..), listAll)
 -- import Text.Blaze.Html.Renderer.String as HRS
 -- import Text.Blaze.Internal as BI
 
-index :: Html
-index = do
+index :: [MonitoredProcess] -> Html
+index processes = do
   docTypeHtml $ do
     head $ do
       link ! rel "stylesheet" ! href "https://fonts.googleapis.com/css?family=Roboto:300,400,500"
@@ -46,14 +46,14 @@ index = do
       script ! src "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js" $ mempty
       title "ProcPS dashboard"
     body $ do
-      page
+      page processes
 
 
-page :: Html
-page = do
+page :: [MonitoredProcess] -> Html
+page processes = do
   div ! class_ "container" $ do
     header'
-    dashboard [firefox, thunderbird]
+    dashboard processes
     footer'
 
 
@@ -69,32 +69,6 @@ dashboard processes = do
 --   case processes of
 --     Just procs -> return $ card "Firefox" "A web browser"
 --     Nothing -> return $ card "Firefox" "A web browser"
-
-
-firefox :: MonitoredProcess
-firefox = MonitoredProcess
-  { name        = "Firefox"
-  , process     = Process { pname = "firefox", pid = "9324", command = "/usr/bin/firefox"}
-  , started     = True
-  , stopped     = False
-  , memoryUsage = 0
-  , uptime      = 0
-  , status      = "started"
-  , logFile     = "/home/laozi/mproc"
-  }
-
-
-thunderbird :: MonitoredProcess
-thunderbird = MonitoredProcess
-  { name        = "Thunderbird"
-  , process     = Process { pname = "thunderbird", pid = "121", command = "/usr/bin/thunderbird"}
-  , started     = False
-  , stopped     = True
-  , memoryUsage = 0
-  , uptime      = 0
-  , status      = "stopped"
-  , logFile     = "/home/laozi/mproc"
-  }
 
 
 card :: MonitoredProcess -> Html

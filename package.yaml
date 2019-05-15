@@ -30,8 +30,10 @@ dependencies:
 - directory
 - filepath
 - MissingH
+- mtl
 - optparse-applicative
 - scotty
+- text
 - typed-process
 - warp
 
