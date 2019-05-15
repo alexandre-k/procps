@@ -8,6 +8,7 @@ module Process.Monitor
   , Process (..)
   , create
   , listAll
+  , monitoredProcess
   , stop
   )
 where
