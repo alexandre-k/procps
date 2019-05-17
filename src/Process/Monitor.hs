@@ -84,10 +84,10 @@ monitoredProcess name cmd = do
       (_, _, _, hdl) <- createProcess $ shell cmd
       pid <- getPid hdl
       case pid of
-          Just p-> return $ Just Process { pid = (show p) :: FilePath
-                                      , pname = name
-                                      , command = cmd
-                                      }
+          Just p-> return $ Just Process { pid     = (show p) :: FilePath
+                                         , pname   = name
+                                         , command = cmd
+                                         }
           Nothing -> return $ Nothing
       where
 
