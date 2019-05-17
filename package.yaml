@@ -32,6 +32,7 @@ dependencies:
 - MissingH
 - mtl
 - optparse-applicative
+- process
 - scotty
 - text
 - typed-process

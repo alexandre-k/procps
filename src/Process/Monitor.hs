@@ -20,6 +20,7 @@ import qualified Data.ByteString.Lazy as B
 import GHC.Generics
 import System.Exit
 import System.FilePath.Posix
+import System.Process (getPid, shell, createProcess)
 import qualified System.Process.Typed as P
 
 data FilterProperty = PName | Command
@@ -46,9 +47,13 @@ monitoredProcess :: String -> String -> IO MonitoredProcess
 monitoredProcess name cmd = do
   startedProcess <- startProcess name cmd
   loggingDirectory <- Internal.loggingDirectory
-  case (startedProcess) of
+  case startedProcess of
     Just process -> do
-      return $ MonitoredProcess { name        = name
+      putStrLn $ show monitoredProc
+      putStrLn $ show process
+      return $ monitoredProc
+      where
+        monitoredProc = MonitoredProcess { name        = name
                                 , process     = process
                                 , started     = True
                                 , stopped     = False
@@ -76,15 +81,15 @@ monitoredProcess name cmd = do
 
     startProcess :: String -> String -> IO (Maybe Process)
     startProcess name cmd = do
-      exitCode <- P.runProcess $ P.shell cmdWithPID
-      case exitCode of
-          ExitSuccess -> return $ Just Process { pid = (show exitCode) :: FilePath
+      (_, _, _, hdl) <- createProcess $ shell cmd
+      pid <- getPid hdl
+      case pid of
+          Just p-> return $ Just Process { pid = (show p) :: FilePath
                                       , pname = name
                                       , command = cmd
                                       }
-          ExitFailure _ -> return $ Nothing
+          Nothing -> return $ Nothing
       where
-          cmdWithPID = "(" ++ cmd ++ " &) && (echo $!)"
 
 
 create :: String -> String -> IO ()
