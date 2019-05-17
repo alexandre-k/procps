@@ -54,14 +54,14 @@ monitoredProcess name cmd = do
       return $ monitoredProc
       where
         monitoredProc = MonitoredProcess { name        = name
-                                , process     = process
-                                , started     = True
-                                , stopped     = False
-                                , memoryUsage = 0
-                                , uptime      = 0
-                                , status      = "Running"
-                                , logFile     = loggingDirectory </> name
-                                }
+                                         , process     = process
+                                         , started     = True
+                                         , stopped     = False
+                                         , memoryUsage = 0
+                                         , uptime      = 0
+                                         , status      = "Running"
+                                         , logFile     = loggingDirectory </> name
+                                         }
 
     Nothing -> do
       return $ MonitoredProcess { name = name
