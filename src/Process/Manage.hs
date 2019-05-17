@@ -42,7 +42,7 @@ listProcesses = do
   procs <- runningProcesses
   mapM readProcessInfo procs
 
-
+-- Determine if a process is alive based on all processes found
 isAlive :: Process -> IO Bool
 isAlive process = do
   processes <- listProcesses
