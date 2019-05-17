@@ -42,6 +42,16 @@ listProcesses = do
   procs <- runningProcesses
   mapM readProcessInfo procs
 
+
+isAlive :: Process -> IO Bool
+isAlive process = do
+  processes <- listProcesses
+  return $ not . null $ filter (isSameProcess process) processes
+  where
+    isSameProcess :: Process -> Process -> Bool
+    isSameProcess p1 p2  =
+      (pid p1) == (pid p2) && (pname p1) == (pname p2) && (command p1) == (command p2)
+
 -- check if a process is being currently run
 isRunning :: String -> IO Bool
 isRunning name = do
