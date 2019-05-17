@@ -4,7 +4,9 @@
 
 module Process.Manage
   ( FilterProperty (..)
+  , Process (..)
   , listProcesses
+  , isAlive
   , isRunning
   , findProcess
   , kill

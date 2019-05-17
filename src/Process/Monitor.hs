@@ -3,17 +3,17 @@
 {-# LANGUAGE DeriveAnyClass #-}
 
 module Process.Monitor
-  ( FilterProperty (..)
-  , MonitoredProcess (..)
-  , Process (..)
-  , create
+  ( MonitoredProcess (..)
   , listAll
   , monitoredProcess
+  , start
+  , startM
   , stop
   )
 where
 
 import qualified Process.Internal.Common as Internal
+import Process.Manage (Process(..), isAlive, kill)
 import Control.Monad as M
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
@@ -23,13 +23,6 @@ import System.FilePath.Posix
 import System.Process (getPid, shell, createProcess)
 import qualified System.Process.Typed as P
 
-data FilterProperty = PName | Command
-
-data Process = Process
-  { pname   :: String
-  , pid     :: FilePath
-  , command :: String
-  } deriving (Generic, Show, ToJSON, FromJSON)
 
 data MonitoredProcess = MonitoredProcess
   { name        :: String
@@ -45,7 +38,7 @@ data MonitoredProcess = MonitoredProcess
 -- command to start it
 monitoredProcess :: String -> String -> IO MonitoredProcess
 monitoredProcess name cmd = do
-  startedProcess <- startProcess name cmd
+  startedProcess <- start name cmd
   loggingDirectory <- Internal.loggingDirectory
   case startedProcess of
     Just process -> do
@@ -77,23 +70,9 @@ monitoredProcess name cmd = do
                                 , logFile = loggingDirectory </> name
                                 }
 
-  where
 
-    startProcess :: String -> String -> IO (Maybe Process)
-    startProcess name cmd = do
-      (_, _, _, hdl) <- createProcess $ shell cmd
-      pid <- getPid hdl
-      case pid of
-          Just p-> return $ Just Process { pid     = (show p) :: FilePath
-                                         , pname   = name
-                                         , command = cmd
-                                         }
-          Nothing -> return $ Nothing
-      where
-
-
-create :: String -> String -> IO ()
-create name cmd = do
+startM :: String -> String -> IO ()
+startM name cmd = do
   unique <- isUnique name
   M.guard $ unique
   process <- monitoredProcess name cmd
@@ -111,16 +90,25 @@ processesNames :: [MonitoredProcess] -> [String]
 processesNames procs = map (\p -> name p) procs
 
 
-stop :: String -> IO ()
-stop name = do
-  processes <- listAll
-  case processes of
-    Just p -> putStrLn $ show p
-    Nothing -> putStrLn "nothing"
-  -- where
-  --   removeProcess :: String -> MonitoredProcess
-  --   removeProcess name = do
-  --     putStrLn "remove Process"
+start :: String -> String -> IO (Maybe Process)
+start name cmd = do
+  (_, _, _, hdl) <- createProcess $ shell cmd
+  pid <- getPid hdl
+  case pid of
+    Just p-> return $ Just Process { pid     = (show p) :: FilePath
+                                    , pname   = name
+                                    , command = cmd
+                                    }
+    Nothing -> return $ Nothing
+
+
+stop :: MonitoredProcess -> IO ExitCode
+stop mprocess = do
+    exists <- isAlive p
+    guard exists
+    kill p
+    where
+      p = process mprocess
 
 
 listAll :: IO (Maybe [MonitoredProcess])

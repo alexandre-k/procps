@@ -30,7 +30,8 @@ import Text.Blaze.Html5.Attributes (
   id,
   rel,
   src)
-import Process.Monitor (MonitoredProcess(..), Process(..), listAll)
+import Process.Monitor (MonitoredProcess(..), listAll)
+import Process.Manage (Process(..))
 -- import Text.Blaze.Html.Renderer.Text as HRT
 -- import Text.Blaze.Html.Renderer.String as HRS
 -- import Text.Blaze.Internal as BI

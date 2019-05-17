@@ -12,9 +12,10 @@ import Data.String (fromString)
 import Data.Text.Lazy (pack)
 import qualified Network.Wai.Handler.Warp as W
 import Process.Web.Internal.Index  (index)
-import Process.Monitor (listAll, monitoredProcess)
+import Process.Manage (Process(..))
+import Process.Monitor (MonitoredProcess(..), listAll, monitoredProcess, stop)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
-import Web.Scotty
+import Web.Scotty hiding (status)
 
 
 data Server = Server
@@ -40,6 +41,22 @@ dashboard = do
   post "/api/v1.0/start/" $ do
     process <- liftIO $ monitoredProcess "thunderbird" "/usr/bin/thunderbird"
     text $ pack $ show process
+
+  post "/api/v1.0/stop/" $ do
+    liftIO $ stop $ MonitoredProcess {
+      name = "thunderbird"
+      , process = Process {pname = "thunderbird"
+                        , pid = "11841"
+                        , command = "/usr/bin/thunderbird"}
+      , started = True
+      , stopped = False
+      , memoryUsage = 0
+      , uptime = 0
+      , status = "Running"
+      , logFile = "/home/laozi/.procps/logs/thunderbird"}
+    text $ pack $ "ok"
+
+
 
 
 start :: Server -> IO ()
