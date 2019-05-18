@@ -33,7 +33,6 @@ data MonitoredProcess = MonitoredProcess
   , status      :: String
   , logFile     :: FilePath} deriving (Generic, Show, ToJSON, FromJSON)
 
-type PID = Int
 
 -- start a process as a monitored process given a unique name and a
 -- command to start it
