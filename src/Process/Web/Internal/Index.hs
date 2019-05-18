@@ -64,14 +64,6 @@ dashboard processes = do
     forM_ processes card
 
 
--- processCard :: IO Html
--- processCard = do
---   processes <- listAll
---   case processes of
---     Just procs -> return $ card "Firefox" "A web browser"
---     Nothing -> return $ card "Firefox" "A web browser"
-
-
 card :: MonitoredProcess -> Html
 card mproc = do
   div ! class_ "col s6 m6" $ do

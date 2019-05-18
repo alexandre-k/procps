@@ -8,7 +8,6 @@ module Process.Monitor
   , monitoredProcess
   , start
   , startM
-  , stop
   )
 where
 
@@ -33,6 +32,8 @@ data MonitoredProcess = MonitoredProcess
   , uptime      :: Int
   , status      :: String
   , logFile     :: FilePath} deriving (Generic, Show, ToJSON, FromJSON)
+
+type PID = Int
 
 -- start a process as a monitored process given a unique name and a
 -- command to start it
@@ -100,15 +101,6 @@ start name cmd = do
                                     , command = cmd
                                     }
     Nothing -> return $ Nothing
-
-
-stop :: MonitoredProcess -> IO ExitCode
-stop mprocess = do
-    exists <- isAlive p
-    guard exists
-    kill p
-    where
-      p = process mprocess
 
 
 listAll :: IO (Maybe [MonitoredProcess])

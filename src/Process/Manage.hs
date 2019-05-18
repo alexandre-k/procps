@@ -11,10 +11,12 @@ module Process.Manage
   , findProcess
   , kill
   , start
+  , stop
   )
 where
 
 import qualified Process.Internal.Common as Internal
+import Control.Monad
 import Data.Aeson
 import Data.List
 import Data.String.Utils
@@ -97,3 +99,9 @@ kill process =
 -- start a process given a command
 start :: String -> IO ()
 start cmd = P.runProcess_ $ P.shell cmd
+
+
+stop :: Process -> IO ExitCode
+stop process = do
+    exists <- isAlive process
+    if exists then kill process else return $ ExitFailure 127

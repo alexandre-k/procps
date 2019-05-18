@@ -12,8 +12,8 @@ import Data.String (fromString)
 import Data.Text.Lazy (pack)
 import qualified Network.Wai.Handler.Warp as W
 import Process.Web.Internal.Index  (index)
-import Process.Manage (Process(..))
-import Process.Monitor (MonitoredProcess(..), listAll, monitoredProcess, stop)
+import qualified Process.Manage as MA
+import Process.Monitor (MonitoredProcess(..), listAll, monitoredProcess)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Web.Scotty hiding (status)
 
@@ -38,22 +38,15 @@ dashboard = do
       Just p -> html . renderHtml $ index p
       Nothing -> html . renderHtml $ index []
 
-  post "/api/v1.0/start/" $ do
+  post "/api/v1.0/start" $ do
     process <- liftIO $ monitoredProcess "thunderbird" "/usr/bin/thunderbird"
     text $ pack $ show process
 
-  post "/api/v1.0/stop/" $ do
-    liftIO $ stop $ MonitoredProcess {
-      name = "thunderbird"
-      , process = Process {pname = "thunderbird"
-                        , pid = "11841"
-                        , command = "/usr/bin/thunderbird"}
-      , started = True
-      , stopped = False
-      , memoryUsage = 0
-      , uptime = 0
-      , status = "Running"
-      , logFile = "/home/laozi/.procps/logs/thunderbird"}
+  post "/api/v1.0/stop" $ do
+    mprocess <- jsonData :: ActionM MA.Process
+    liftIO $ MA.stop $ MA.Process {MA.pname = "thunderbird"
+                        , MA.pid = "11841"
+                        , MA.command = "/usr/bin/thunderbird"}
     text $ pack $ "ok"
 
 
