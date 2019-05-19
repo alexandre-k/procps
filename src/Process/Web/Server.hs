@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Process.Web.Server
   (
-    start
+    serve
   , Server (..)
   )
 where
@@ -52,5 +52,5 @@ dashboard = do
 
 
 
-start :: Server -> IO ()
-start (Server ip port) = scottyOpts (customSettings ip port) $ dashboard
+serve :: Server -> IO ()
+serve (Server ip port) = scottyOpts (customSettings ip port) $ dashboard

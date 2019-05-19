@@ -1,15 +1,20 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-module Process.CLI where
+module Process.CLI
+  ( parse
+  , parseCommand
+  , withInfo
+  )
+where
 
 import Data.Semigroup ((<>))
 import Options.Applicative
-import Process.Web.Server as S
+import Process.Web.Server
 
+data Command
+  = Serve String Int
+  | Start String
 
-
-data Command =
-  StartServer
   -- , show :: String
   -- , listAll :: Bool
   -- , create :: String
@@ -43,8 +48,21 @@ data Command =
 --       <> help "Find a process given its name"
 --       )
 
-server :: Parser S.Server
-server = S.Server
+-- serve :: Parser Command
+-- serve = fmap S.Server serverParser
+
+start :: Parser Command
+start = Start
+  <$> strOption
+      ( long "process"
+      <> short 'p'
+      <> metavar "name"
+      <> value ""
+      <> help "Name of a process you want to start"
+      )
+
+serveParser :: Parser Command
+serveParser = Serve
   <$> strOption
       ( long "ip"
       <> short 'i'
@@ -60,12 +78,19 @@ server = S.Server
       <> help "Port used to listen to connections"
       )
 
-parseServer :: Parser S.Server
-parseServer = subparser $
-  command "start-server" (withInfo server "Start a web server to visualize processes through a web interface")
+parseCommand :: Parser Command
+parseCommand = subparser $
+  command "serve"
+   (withInfo serveParser "Start a web server to visualize processes through a web interface")
+  <> command "start"
+   (withInfo start "Start a process given a name")
+
 
 withInfo :: Parser a -> String -> ParserInfo a
 withInfo opts desc = info (helper <*> opts) $ progDesc desc
 
-parse :: S.Server -> IO ()
-parse server = S.start server
+parse :: Command -> IO ()
+parse command =
+  case command of
+    Serve _ _ -> putStrLn "Launch server"
+    Start _ -> putStrLn "Start process"
