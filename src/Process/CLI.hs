@@ -10,7 +10,7 @@ where
 import Data.Semigroup ((<>))
 import Options.Applicative
 import Process.Manage hiding (command)
-import Process.Monitor
+import Process.Monitor hiding (start)
 import Process.Web.Server
 
 
@@ -23,7 +23,6 @@ data Server = Server
 data Options
   = Serve String Int
   | Start String
-  | Find String
   | ListAll
   | Show String
 
@@ -35,11 +34,6 @@ showParser = Show <$> strArgument
 
 listAllParser :: Parser Options
 listAllParser = pure ListAll
-
-findParser :: Parser Options
-findParser = Find <$> strArgument
-  ( metavar "name of a process"
-   <> help "Find a process given its name")
 
 startParser :: Parser Options
 startParser = Start <$> strArgument
@@ -71,8 +65,6 @@ parseOptions = subparser $
    (withInfo startParser "Start a process given its name")
   <> command "list"
    (withInfo listAllParser "List all started processes")
-  <> command "find"
-   (withInfo findParser "Find a process given its name")
   <> command "show"
    (withInfo showParser "Show a process given its name")
 
@@ -83,7 +75,12 @@ parse :: Options -> IO ()
 parse command =
   case command of
     Serve ip port -> putStrLn $ "Launch server: " ++ ip ++ ":" ++ show port
-    Start name -> putStrLn $ "Start process " ++ name
-    ListAll -> putStrLn "List all"
-    Show name -> putStrLn $ "show " ++ name
-    Find name -> putStrLn $ "find " ++ name
+    Start name -> start name
+    ListAll -> do
+      mprocesses <- listAll
+      case mprocesses of
+        Just mprocesses -> putStrLn $ show mprocesses
+        Nothing -> putStrLn "No processes found."
+    Show name -> do
+      process <- findProcess PName name
+      putStrLn $ show process
