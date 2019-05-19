@@ -2,66 +2,51 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module Process.CLI
   ( parse
-  , parseCommand
+  , parseOptions
   , withInfo
   )
 where
 
 import Data.Semigroup ((<>))
 import Options.Applicative
+import Process.Manage hiding (command)
+import Process.Monitor
 import Process.Web.Server
 
-data Command
+
+data Server = Server
+  { ip :: String
+  , port :: Int
+  } deriving (Show)
+
+
+data Options
   = Serve String Int
   | Start String
-
-  -- , show :: String
-  -- , listAll :: Bool
-  -- , create :: String
-  -- , find :: String
+  | Find String
+  | ListAll
+  | Show String
 
 
--- app :: Parser Manager
--- app = Manager
---   <$> strOption
---       ( long "start-server"
---       <> metavar "[ip address]:port"
---       <> help "Start a web server to visualize processes through a web interface"
---       )
---   <*> strOption
---       ( long "show"
---       <> metavar "process name"
---       <> help "Show a monitored process given its unique identifier"
---       )
---   <*> switch
---       ( long "list-all"
---       <> help "Show all monitored processes"
---       )
---   <*> strOption
---       ( long "create"
---       <> metavar "command to run a process"
---       <> help "Create a process managed through the API or the CLI"
---       )
---   <*> strOption
---       ( long "find"
---       <> metavar "name of a process"
---       <> help "Find a process given its name"
---       )
+showParser :: Parser Options
+showParser = Show <$> strArgument
+      ( metavar "process name"
+      <> help "Show a monitored process given its unique identifier")
 
--- serve :: Parser Command
--- serve = fmap S.Server serverParser
+listAllParser :: Parser Options
+listAllParser = pure ListAll
 
-start :: Parser Command
-start = Start
-  <$> strOption
-      ( long "process"
-      <> short 'p'
-      <> metavar "name"
-      <> value ""
-      <> help "Name of a process you want to start"
-      )
+findParser :: Parser Options
+findParser = Find <$> strArgument
+  ( metavar "name of a process"
+   <> help "Find a process given its name")
 
-serveParser :: Parser Command
+startParser :: Parser Options
+startParser = Start <$> strArgument
+  ( metavar "process name"
+  <> help "Name of a process existing in /usr/bin")
+
+serveParser :: Parser Options
 serveParser = Serve
   <$> strOption
       ( long "ip"
@@ -78,19 +63,27 @@ serveParser = Serve
       <> help "Port used to listen to connections"
       )
 
-parseCommand :: Parser Command
-parseCommand = subparser $
+parseOptions :: Parser Options
+parseOptions = subparser $
   command "serve"
    (withInfo serveParser "Start a web server to visualize processes through a web interface")
   <> command "start"
-   (withInfo start "Start a process given a name")
-
+   (withInfo startParser "Start a process given its name")
+  <> command "list"
+   (withInfo listAllParser "List all started processes")
+  <> command "find"
+   (withInfo findParser "Find a process given its name")
+  <> command "show"
+   (withInfo showParser "Show a process given its name")
 
 withInfo :: Parser a -> String -> ParserInfo a
 withInfo opts desc = info (helper <*> opts) $ progDesc desc
 
-parse :: Command -> IO ()
+parse :: Options -> IO ()
 parse command =
   case command of
-    Serve _ _ -> putStrLn "Launch server"
-    Start _ -> putStrLn "Start process"
+    Serve ip port -> putStrLn $ "Launch server: " ++ ip ++ ":" ++ show port
+    Start name -> putStrLn $ "Start process " ++ name
+    ListAll -> putStrLn "List all"
+    Show name -> putStrLn $ "show " ++ name
+    Find name -> putStrLn $ "find " ++ name

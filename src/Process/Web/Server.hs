@@ -50,7 +50,5 @@ dashboard = do
     text $ pack $ "ok"
 
 
-
-
 serve :: Server -> IO ()
 serve (Server ip port) = scottyOpts (customSettings ip port) $ dashboard

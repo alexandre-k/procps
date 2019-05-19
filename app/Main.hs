@@ -4,11 +4,11 @@
 module Main where
 
 import Options.Applicative
-import Process.CLI (withInfo, parseCommand, parse)
+import Process.CLI (withInfo, parseOptions, parse)
 
 main :: IO ()
 main = do
-  parse =<< execParser (withInfo parseCommand "Command line application to parse processes")
+  parse =<< execParser (withInfo parseOptions "Command line application to parse processes")
 
 -- main = do
 --   -- P.start "kate"
