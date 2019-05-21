@@ -12,6 +12,7 @@ import Options.Applicative
 import Process.Manage hiding (command)
 import Process.Monitor hiding (start)
 import Process.Web.Server
+import Text.PrettyPrint.Boxes (printBox, text, render, (<+>))
 
 
 data Server = Server
@@ -79,7 +80,7 @@ parse command =
     ListAll -> do
       mprocesses <- listAll
       case mprocesses of
-        Just mprocesses -> putStrLn $ show mprocesses
+        Just mprocesses -> mapM_ (\m -> printBox $ text (show $ name m) <+> text (show $ started m) <+> text (show $ pid (process m))) mprocesses
         Nothing -> putStrLn "No processes found."
     Show name -> do
       process <- findProcess PName name
