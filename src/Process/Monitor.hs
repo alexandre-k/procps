@@ -27,7 +27,6 @@ data MonitoredProcess = MonitoredProcess
   { name        :: String
   , process     :: Process
   , started     :: Bool
-  , stopped     :: Bool
   , memoryUsage :: Int
   , uptime      :: Int
   , status      :: String
@@ -49,7 +48,6 @@ monitoredProcess name cmd = do
         monitoredProc = MonitoredProcess { name        = name
                                          , process     = process
                                          , started     = True
-                                         , stopped     = False
                                          , memoryUsage = 0
                                          , uptime      = 0
                                          , status      = "Running"
@@ -63,7 +61,6 @@ monitoredProcess name cmd = do
                                                     , command = cmd
                                                     }
                                 , started = False
-                                , stopped = True
                                 , memoryUsage = 0
                                 , uptime = 0
                                 , status = "Stopped"
