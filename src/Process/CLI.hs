@@ -9,8 +9,8 @@ where
 
 import Data.Semigroup ((<>))
 import Options.Applicative
-import Process.Manage hiding (command)
-import Process.Monitor hiding (start)
+import qualified Process.Manage as MA
+import qualified Process.Monitor as MO
 import Process.Web.Server
 import Text.PrettyPrint.Boxes (printBox, text, render, (<+>))
 
@@ -72,16 +72,26 @@ parseOptions = subparser $
 withInfo :: Parser a -> String -> ParserInfo a
 withInfo opts desc = info (helper <*> opts) $ progDesc desc
 
+prettyPrintM :: [MO.MonitoredProcess] -> IO ()
+prettyPrintM mprocesses = mapM_ (\m -> printBox $ text (show $ MO.name m)
+                               <+> text (show $ MO.started m)
+                               <+> text (show $ MA.pid (MO.process m))) mprocesses
+
+prettyPrint :: [MA.Process] -> IO ()
+prettyPrint processes = mapM_ (\p -> printBox $ text (show $ MA.pname p)
+                               <+> text (show $ MA.command p)
+                               <+> text (show $ MA.pid p)) processes
+
 parse :: Options -> IO ()
 parse command =
   case command of
     Serve ip port -> putStrLn $ "Launch server: " ++ ip ++ ":" ++ show port
-    Start name -> start name
+    Start name -> MA.start name
     ListAll -> do
-      mprocesses <- listAll
+      mprocesses <- MO.listAll
       case mprocesses of
-        Just mprocesses -> mapM_ (\m -> printBox $ text (show $ name m) <+> text (show $ started m) <+> text (show $ pid (process m))) mprocesses
+        Just mprocesses ->  prettyPrintM mprocesses
         Nothing -> putStrLn "No processes found."
     Show name -> do
-      process <- findProcess PName name
-      putStrLn $ show process
+      mprocesses <- MA.findProcess MA.PName name
+      prettyPrint mprocesses
