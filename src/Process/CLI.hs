@@ -13,7 +13,8 @@ import Options.Applicative
 import qualified Process.Manage as MA
 import qualified Process.Monitor as MO
 import Process.Web.Server
-import Text.PrettyPrint.Boxes (printBox, text, render, (<+>))
+import Text.Tabular
+import Text.Tabular.AsciiArt
 
 
 data Server = Server
@@ -73,15 +74,6 @@ parseOptions = subparser $
 withInfo :: Parser a -> String -> ParserInfo a
 withInfo opts desc = info (helper <*> opts) $ progDesc desc
 
-prettyPrintM :: [MO.MonitoredProcess] -> IO ()
-prettyPrintM mprocesses = mapM_ (\m -> printBox $ text (show $ MO.name m)
-                               <+> text (show $ MO.started m)
-                               <+> text (show $ MA.pid (MO.process m))) mprocesses
-
-prettyPrint :: [MA.Process] -> IO ()
-prettyPrint processes = mapM_ (\p -> printBox $ text (show $ MA.pname p)
-                               <+> text (show $ MA.command p)
-                               <+> text (show $ MA.pid p)) processes
 
 parse :: Options -> IO ()
 parse command =
@@ -91,8 +83,22 @@ parse command =
     ListAll -> do
       mprocesses <- MO.listAll
       case mprocesses of
-        Just mprocesses ->  prettyPrintM mprocesses
+        Just mprocesses ->
+          putStrLn $ render id id id example
+          where
+            example = Table
+              (Group DoubleLine
+                  [ Group SingleLine [Header "name", Header "command", Header "pid"]
+                  ])
+              (map (\p -> [MO.name p, MO.started p, MA.pid p]) mprocesses)
+
         Nothing -> putStrLn "No processes found."
     Show name -> do
       mprocesses <- MA.findProcess MA.PName (T.pack name)
-      prettyPrint mprocesses
+      putStrLn $ render id id id example
+      where
+        example = Table
+          (Group DoubleLine
+              [ Group SingleLine [Header "name", Header "command", Header "pid"]
+              ])
+          (map (\p -> [MA.pname p, MA.command p, MA.pid p]) mprocesses)
