@@ -34,9 +34,6 @@ cpuUsage = do
         cpuData :: String -> [String]
         cpuData c = drop 1 . words . head . lines $ c
 
-    -- toCPU :: String -> CPU
-    -- toCPU l = read l :: CPU
-
     toCPU :: [Int] -> CPU
     toCPU [a, b, c, d, e, f, g, h, i, j] = CPU {
       usage=a, nice=b, system=c, idle=d, iowait=e, irq=f, softirq=g, steal=h, guest=i, guest_nice=j }
