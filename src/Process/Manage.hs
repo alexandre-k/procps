@@ -18,6 +18,7 @@ where
 import qualified Process.Internal.Common as Internal
 import Control.Monad
 import Data.Aeson
+import Data.Char (isSpace)
 import Data.List
 import Data.String.Utils
 import GHC.Generics
@@ -79,7 +80,13 @@ filterProcesses processes filterProperty keyword =
 findProcess :: FilterProperty -> String -> IO [Process]
 findProcess filterProperty keyword = do
   processes <- listProcesses
-  return $ filterProcesses processes filterProperty keyword
+
+  let processes' = filter (\p -> not $ isBlank (command p)) processes
+    in
+    return $ filterProcesses processes' filterProperty keyword
+  where
+    isBlank :: String -> Bool
+    isBlank s = all isSpace s
 
 -- read information of interest for a given process found in /proc
 readProcessInfo :: FilePath -> IO Process
