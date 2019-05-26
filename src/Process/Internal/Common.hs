@@ -1,27 +1,29 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 module Process.Internal.Common where
 
 import Data.Char
+import Data.Text
 import System.Directory
 import System.FilePath.Posix
 #if linux_HOST_OS
 import qualified Process.Internal.Linux as Linux
 
 
-processesDir :: String
+processesDir :: FilePath
 processesDir = Linux.processesDir
 
-processName :: String -> FilePath
-processName pid = Linux.processesDir </> pid </> Linux.processName
+processName :: Text -> FilePath
+processName pid = Linux.processesDir </> (unpack pid) </> Linux.processName
 
-processCommand :: String -> FilePath
-processCommand pid = Linux.processesDir </> pid </> Linux.processCommand
+processCommand :: Text -> FilePath
+processCommand pid = Linux.processesDir </> (unpack pid) </> Linux.processCommand
 
-processEnviron :: String -> FilePath
-processEnviron pid = Linux.processesDir </> pid </> Linux.processEnviron
+processEnviron :: Text -> FilePath
+processEnviron pid = Linux.processesDir </> (unpack pid) </> Linux.processEnviron
 
-processCwd :: String -> FilePath
-processCwd pid = Linux.processesDir </> pid </> Linux.processCwd
+processCwd :: Text -> FilePath
+processCwd pid = Linux.processesDir </> (unpack pid) </> Linux.processCwd
 
 cpuInfo :: FilePath
 cpuInfo = Linux.cpuInfo </> Linux.cpuInfo
@@ -35,20 +37,20 @@ loadAvg = Linux.processesDir </> Linux.loadAvg
 import qualified Process.Internal.BSD as BSD
 
 
-processesDir :: String
+processesDir :: Text
 processesDir = BSD.processesDir
 
-processName :: String -> FilePath
-processName pid = BSD.processesDir </> pid </> BSD.processName
+processName :: Text -> FilePath
+processName pid = BSD.processesDir </> (unpack pid) </> BSD.processName
 
-processCommand :: String -> FilePath
-processCommand pid = BSD.processesDir </> pid </> BSD.processCommand
+processCommand :: Text -> FilePath
+processCommand pid = BSD.processesDir </> (unpack pid) </> BSD.processCommand
 
-processEnviron :: String -> FilePath
-processEnviron pid = BSD.processesDir </> pid </> BSD.processEnviron
+processEnviron :: Text -> FilePath
+processEnviron pid = BSD.processesDir </> (unpack pid) </> BSD.processEnviron
 
-processCwd :: String -> FilePath
-processCwd pid = BSD.processesDir </> pid </> BSD.processCwd
+processCwd :: Text -> FilePath
+processCwd pid = BSD.processesDir </> (unpack pid) </> BSD.processCwd
 
 cpuInfo :: FilePath
 cpuInfo = BSD.cpuInfo </> BSD.cpuInfo
@@ -63,7 +65,8 @@ loadAvg = BSD.processesDir </> BSD.loadAvg
 
 -- helper function to filter processes in /proc
 isInteger :: FilePath -> Bool
-isInteger xs = all isDigit xs
+isInteger xs = Prelude.all isDigit xs
+
 
 configDirectory :: IO FilePath
 configDirectory = do

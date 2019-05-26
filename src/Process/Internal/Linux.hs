@@ -1,7 +1,5 @@
 module Process.Internal.Linux where
 
-import Data.Char
-
 
 processesDir :: String
 processesDir = "/proc"
@@ -26,7 +24,3 @@ cpuUsage = "stat"
 
 loadAvg :: String
 loadAvg = "loadavg"
-
--- helper function to filter processes in /proc
-isInteger :: FilePath -> Bool
-isInteger xs = all isDigit xs

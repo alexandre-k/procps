@@ -16,11 +16,9 @@ module Process.Manage
 where
 
 import qualified Process.Internal.Common as Internal
-import Control.Monad
 import Data.Aeson
-import Data.Char (isSpace)
-import Data.List
-import Data.String.Utils
+import qualified Data.List as L
+import qualified Data.Text as T
 import GHC.Generics
 import System.Directory
 import System.Exit
@@ -29,9 +27,9 @@ import qualified System.Process.Typed as P
 data FilterProperty = PName | Command
 
 data Process = Process
-  { pname   :: String
+  { pname   :: T.Text
   , pid     :: FilePath
-  , command :: String
+  , command :: T.Text
   } deriving (Generic, Show, ToJSON, FromJSON)
 
 
@@ -39,7 +37,7 @@ data Process = Process
 runningProcesses :: IO [FilePath]
 runningProcesses = do
   directories <- listDirectory Internal.processesDir
-  return $ filter Internal.isInteger directories
+  return $ L.filter Internal.isInteger directories
 
 -- list currently running processes as the Process data type
 listProcesses :: IO [Process]
@@ -58,7 +56,7 @@ isAlive process = do
       (pid p1) == (pid p2) && (pname p1) == (pname p2) && (command p1) == (command p2)
 
 -- check if a process is being currently run
-isRunning :: String -> IO Bool
+isRunning :: T.Text -> IO Bool
 isRunning name = do
   processes <- listProcesses
   return $ empty $ filterProcesses processes PName name
@@ -66,18 +64,18 @@ isRunning name = do
     empty = not . null
 
 -- filter a process(es) by its name or a keyword used for its execution
-filterProcesses :: [Process] -> FilterProperty -> String -> [Process]
+filterProcesses :: [Process] -> FilterProperty -> T.Text -> [Process]
 filterProcesses processes filterProperty keyword =
   filter (hasKeyword . property) processes
     where
-      hasKeyword = (isInfixOf keyword)
+      hasKeyword = (T.isInfixOf keyword)
       property = case filterProperty of
         PName -> pname
         Command -> command
 
 -- find one or several process by its name or a keyword used at the
 -- command line to execute it.
-findProcess :: FilterProperty -> String -> IO [Process]
+findProcess :: FilterProperty -> T.Text -> IO [Process]
 findProcess filterProperty keyword = do
   processes <- listProcesses
 
@@ -85,15 +83,15 @@ findProcess filterProperty keyword = do
     in
     return $ filterProcesses processes' filterProperty keyword
   where
-    isBlank :: String -> Bool
-    isBlank s = all isSpace s
+    isBlank :: T.Text -> Bool
+    isBlank s = T.null . T.strip $ s
 
 -- read information of interest for a given process found in /proc
 readProcessInfo :: FilePath -> IO Process
 readProcessInfo p = do
-  name <- readFile (Internal.processName p)
-  cmd <- readFile (Internal.processCommand p)
-  return $ Process { pid = p, pname = strip name, command = cmd }
+  name <- readFile (Internal.processName $ T.pack p)
+  cmd <- readFile (Internal.processCommand $ T.pack p)
+  return $ Process { pid = p, pname = T.strip . T.pack $ name, command = T.strip . T.pack $ cmd }
 
 -- kill a process given a Process data type
 kill :: Process -> IO (ExitCode)
@@ -104,8 +102,8 @@ kill process =
     return exitCode
 
 -- start a process given a command
-start :: String -> IO ()
-start cmd = P.runProcess_ $ P.shell cmd
+start :: T.Text -> IO ()
+start cmd = P.runProcess_ $ P.shell $ T.unpack cmd
 
 
 stop :: Process -> IO ExitCode

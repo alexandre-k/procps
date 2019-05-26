@@ -27,10 +27,10 @@ dependencies:
 - boxes
 - bytestring
 - clay
+- containers
 - data-default-class
 - directory
 - filepath
-- MissingH
 - mtl
 - optparse-applicative
 - process

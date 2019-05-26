@@ -8,6 +8,7 @@ module Process.CLI
 where
 
 import Data.Semigroup ((<>))
+import qualified Data.Text as T
 import Options.Applicative
 import qualified Process.Manage as MA
 import qualified Process.Monitor as MO
@@ -86,12 +87,12 @@ parse :: Options -> IO ()
 parse command =
   case command of
     Serve ip port -> putStrLn $ "Launch server: " ++ ip ++ ":" ++ show port
-    Start name -> MA.start name
+    Start name -> MA.start (T.pack name)
     ListAll -> do
       mprocesses <- MO.listAll
       case mprocesses of
         Just mprocesses ->  prettyPrintM mprocesses
         Nothing -> putStrLn "No processes found."
     Show name -> do
-      mprocesses <- MA.findProcess MA.PName name
+      mprocesses <- MA.findProcess MA.PName (T.pack name)
       prettyPrint mprocesses
