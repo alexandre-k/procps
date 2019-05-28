@@ -37,6 +37,7 @@ dependencies:
 - tabular
 - text
 - typed-process
+- wai-cors
 - warp
 
 

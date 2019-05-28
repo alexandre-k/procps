@@ -11,6 +11,7 @@ import Data.Default.Class (def)
 import Data.String (fromString)
 import Data.Text.Lazy (pack)
 import qualified Network.Wai.Handler.Warp as W
+import Network.Wai.Middleware.Cors
 import Process.Web.Internal.Index  (index)
 import qualified Process.Manage as MA
 import Process.Monitor (MonitoredProcess(..), listAll, monitoredProcess)
@@ -59,4 +60,6 @@ dashboard = do
 
 
 serve :: Server -> IO ()
-serve (Server ip port) = scottyOpts (customSettings ip port) $ dashboard
+serve (Server ip port) = scottyOpts (customSettings ip port) $ do
+  middleware simpleCors
+  dashboard
