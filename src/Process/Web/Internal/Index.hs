@@ -66,30 +66,6 @@ dashboard processes = do
   --   forM_ processes card
 
 
--- card :: MonitoredProcess -> Html
--- card mproc = do
---   div ! class_ "col s6 m6" $ do
---     div ! class_ "card blue-grey darken-1" $ do
---       div ! class_ "card-content white-text" $ do
---         span ! class_ "card-title" $ toMarkup (name mproc)
---         paragraph $ "PID: " ++ (pid (process mproc))
---         paragraph $ "Current state: " ++ (status mproc)
---         paragraph $"Log file: " ++ (logFile mproc)
---         paragraph $ "Memory usage: " ++ show (memoryUsage mproc)
---         paragraph $ "Uptime: " ++ show (uptime mproc)
---       div ! class_ "card-action" $ do
---         processState (status mproc)
---       where
---       processState :: String -> Html
---       processState "stopped" = do
---         a ! href "#" $ "start"
---       processState _ = do
---         a ! href "#" $ "restart"
---         a ! href "#" $ "stop"
---       paragraph :: T.Text -> Markup
---       paragraph txt = p $ toMarkup txt
-
-
 header' :: Html
 header' = do
   nav ! class_ "nav-wrapper" $ do
