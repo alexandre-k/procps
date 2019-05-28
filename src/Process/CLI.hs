@@ -50,7 +50,7 @@ serveParser = Serve
       ( long "port"
       <> short 'p'
       <> metavar "int"
-      <> value 3000
+      <> value 5000
       <> help "Port used to listen to connections"
       )
 

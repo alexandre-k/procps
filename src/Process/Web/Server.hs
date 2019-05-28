@@ -26,7 +26,7 @@ data Server = Server
 
 customSettings :: String -> Int -> Options
 customSettings ip port = def { verbose = 1
-                             , settings = W.setHost (fromString ip) $ settings def
+                             , settings = W.setHost (fromString ip) $ W.setPort port $ settings def
                              }
 
 
