@@ -38,6 +38,14 @@ dashboard = do
       Just p -> html . renderHtml $ index p
       Nothing -> html . renderHtml $ index []
 
+  get "/mprocesses" $ do
+    mprocesses <- liftIO listAll
+    case mprocesses of
+      Just mprocesses ->
+        json $ mprocesses
+      Nothing ->
+        liftIO $ putStrLn "..."
+
   post "/api/v1.0/start" $ do
     process <- liftIO $ monitoredProcess "thunderbird" "/usr/bin/thunderbird"
     text $ pack $ show process
