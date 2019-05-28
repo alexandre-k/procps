@@ -17,12 +17,6 @@ import Text.Tabular
 import Text.Tabular.AsciiArt
 
 
-data Server = Server
-  { ip :: String
-  , port :: Int
-  } deriving (Show)
-
-
 data Options
   = Serve String Int
   | Start String
@@ -74,31 +68,32 @@ parseOptions = subparser $
 withInfo :: Parser a -> String -> ParserInfo a
 withInfo opts desc = info (helper <*> opts) $ progDesc desc
 
+pInfo :: MO.MonitoredProcess -> [String]
+pInfo p = [T.unpack (MO.name p), show (MA.command (MO.process p)), show (MA.pid (MO.process p))]
+
+
+
 
 parse :: Options -> IO ()
 parse command =
   case command of
-    Serve ip port -> putStrLn $ "Launch server: " ++ ip ++ ":" ++ show port
+    Serve ip port -> do
+      putStrLn $ "Launch server: " ++ ip ++ ":" ++ show port
+      serve (Server ip port)
+
     Start name -> MA.start (T.pack name)
     ListAll -> do
       mprocesses <- MO.listAll
       case mprocesses of
         Just mprocesses ->
-          putStrLn $ render id id id example
+          putStrLn $ render id id id pTable
           where
-            example = Table
-              (Group DoubleLine
-                  [ Group SingleLine [Header "name", Header "command", Header "pid"]
-                  ])
-              (map (\p -> [MO.name p, MO.started p, MA.pid p]) mprocesses)
+            pTable = Table
+              (Group NoLine (map (\n -> Header (show n)) [1..(length mprocesses)]))
+              (Group NoLine [Header "name", Header "command", Header "pid"])
+              (map pInfo mprocesses)
 
         Nothing -> putStrLn "No processes found."
     Show name -> do
       mprocesses <- MA.findProcess MA.PName (T.pack name)
-      putStrLn $ render id id id example
-      where
-        example = Table
-          (Group DoubleLine
-              [ Group SingleLine [Header "name", Header "command", Header "pid"]
-              ])
-          (map (\p -> [MA.pname p, MA.command p, MA.pid p]) mprocesses)
+      putStrLn $ show mprocesses
