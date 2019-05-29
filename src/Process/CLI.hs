@@ -84,7 +84,7 @@ parse command =
       serve (Server ip port)
 
     Start name cmd -> do
-      process <- (MO.monitoredProcess (T.pack name) (T.pack cmd))
+      process <- (MO.startM (T.pack name) (T.pack cmd))
       putStrLn $ show process
 
     ListAll -> do
