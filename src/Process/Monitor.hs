@@ -12,7 +12,7 @@ module Process.Monitor
 where
 
 import qualified Process.Internal.Common as Internal
-import Process.Manage (Process(..), isAlive, kill)
+import Process.Manage (Process(..), isAlive, kill, start)
 import Control.Monad as M
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
@@ -86,18 +86,6 @@ startM name cmd = do
 
 processesNames :: [MonitoredProcess] -> [T.Text]
 processesNames procs = map (\p -> name p) procs
-
-
-start :: T.Text -> T.Text -> IO (Maybe Process)
-start name cmd = do
-  (_, _, _, hdl) <- createProcess $ shell . T.unpack $ cmd
-  pid <- getPid hdl
-  case pid of
-    Just p-> return $ Just Process { pid     = (show p) :: FilePath
-                                    , pname   = name
-                                    , command = cmd
-                                    }
-    Nothing -> return $ Nothing
 
 
 listAll :: IO (Maybe [MonitoredProcess])
