@@ -19,7 +19,7 @@ import Text.Tabular.AsciiArt
 
 data Options
   = Serve String Int
-  | Start String
+  | Start String String
   | ListAll
   | Show String
 
@@ -33,9 +33,13 @@ listAllParser :: Parser Options
 listAllParser = pure ListAll
 
 startParser :: Parser Options
-startParser = Start <$> strArgument
+startParser = Start
+  <$> strArgument
   ( metavar "process name"
   <> help "Name of a process existing in /usr/bin")
+  <*> strArgument
+  ( metavar "command of the said process"
+  <> help "A command to launch a given process")
 
 serveParser :: Parser Options
 serveParser = Serve
@@ -59,7 +63,7 @@ parseOptions = subparser $
   command "serve"
    (withInfo serveParser "Start a web server to visualize processes through a web interface")
   <> command "start"
-   (withInfo startParser "Start a process given its name")
+   (withInfo startParser "Start a process given its name and a command")
   <> command "list"
    (withInfo listAllParser "List all started processes")
   <> command "show"
@@ -71,9 +75,6 @@ withInfo opts desc = info (helper <*> opts) $ progDesc desc
 pInfo :: MO.MonitoredProcess -> [String]
 pInfo p = [T.unpack (MO.name p), show (MA.command (MO.process p)), show (MA.pid (MO.process p))]
 
-
-
-
 parse :: Options -> IO ()
 parse command =
   case command of
@@ -82,11 +83,9 @@ parse command =
       putStrLn $ "Launch server: " ++ ip ++ ":" ++ show port
       serve (Server ip port)
 
-    Start name -> do
-      process <- (MA.start (T.pack name) (T.pack name))
-      case process of
-        Just p -> putStrLn $ show p
-        Nothing -> putStrLn $ "Failed to start " ++ name
+    Start name cmd -> do
+      process <- (MO.monitoredProcess (T.pack name) (T.pack cmd))
+      putStrLn $ show process
 
     ListAll -> do
       mprocesses <- MO.listAll

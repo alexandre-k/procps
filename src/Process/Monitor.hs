@@ -6,7 +6,6 @@ module Process.Monitor
   ( MonitoredProcess (..)
   , listAll
   , monitoredProcess
-  , start
   , startM
   )
 where
@@ -42,8 +41,6 @@ monitoredProcess name cmd = do
   loggingDirectory <- Internal.loggingDirectory
   case startedProcess of
     Just process -> do
-      putStrLn $ show monitoredProc
-      putStrLn $ show process
       return $ monitoredProc
       where
         monitoredProc = MonitoredProcess { name        = name
