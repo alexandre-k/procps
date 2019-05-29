@@ -77,7 +77,9 @@ startM name cmd = do
     isUnique processName = do
       processes <- listAll
       case processes of
-        Just procs -> return $ processName `elem` (processesNames procs)
+        Just procs -> do
+          putStrLn $ show (processesNames procs)
+          return $ not $ processName `elem` (processesNames procs)
         Nothing -> return True
 
 
