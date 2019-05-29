@@ -22,7 +22,8 @@ import qualified Data.Text as T
 import GHC.Generics
 import System.Directory
 import System.Exit
-import qualified System.Process.Typed as P
+import qualified System.Process.Typed as PT
+import qualified System.Process as P
 
 data FilterProperty = PName | Command
 
@@ -98,12 +99,19 @@ kill :: Process -> IO (ExitCode)
 kill process =
   let cmd = "kill -9 " ++ (pid process)
   in do
-    exitCode <- P.runProcess $ P.shell cmd
+    exitCode <- PT.runProcess $ PT.shell cmd
     return exitCode
 
 -- start a process given a command
-start :: T.Text -> IO ()
-start cmd = P.runProcess_ $ P.shell $ T.unpack cmd
+start :: T.Text -> T.Text -> IO (Maybe Process)
+start name cmd = do
+  hdl <- P.spawnCommand $ T.unpack cmd
+  procPid <- P.getPid hdl
+  case procPid of
+    Just p -> return $ Just Process { pname   = name
+                                    , pid     = show $ p
+                                    , command = cmd }
+    Nothing -> return Nothing
 
 
 stop :: Process -> IO ExitCode

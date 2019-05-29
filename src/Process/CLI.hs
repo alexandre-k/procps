@@ -77,11 +77,17 @@ pInfo p = [T.unpack (MO.name p), show (MA.command (MO.process p)), show (MA.pid 
 parse :: Options -> IO ()
 parse command =
   case command of
+
     Serve ip port -> do
       putStrLn $ "Launch server: " ++ ip ++ ":" ++ show port
       serve (Server ip port)
 
-    Start name -> MA.start (T.pack name)
+    Start name -> do
+      process <- (MA.start (T.pack name) (T.pack name))
+      case process of
+        Just p -> putStrLn $ show p
+        Nothing -> putStrLn $ "Failed to start " ++ name
+
     ListAll -> do
       mprocesses <- MO.listAll
       case mprocesses of
@@ -94,6 +100,7 @@ parse command =
               (map pInfo mprocesses)
 
         Nothing -> putStrLn "No processes found."
+
     Show name -> do
       mprocesses <- MA.findProcess MA.PName (T.pack name)
       putStrLn $ show mprocesses
