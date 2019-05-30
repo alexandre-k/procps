@@ -54,7 +54,7 @@ isAlive process = do
   where
     isSameProcess :: Process -> Process -> Bool
     isSameProcess p1 p2  =
-      (pid p1) == (pid p2) && (pname p1) == (pname p2) && (command p1) == (command p2)
+      (pid p1) == (pid p2)
 
 -- check if a process is being currently run
 isRunning :: T.Text -> IO Bool
@@ -105,7 +105,7 @@ kill process =
 -- start a process given a command
 start :: T.Text -> T.Text -> IO (Maybe Process)
 start name cmd = do
-  hdl <- P.spawnCommand $ T.unpack cmd
+  hdl <- P.spawnProcess (T.unpack cmd) []
   procPid <- P.getPid hdl
   case procPid of
     Just p -> return $ Just Process { pname   = name
