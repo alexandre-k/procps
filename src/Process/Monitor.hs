@@ -26,52 +26,50 @@ import qualified System.Process.Typed as P
 data MonitoredProcess = MonitoredProcess
   { name        :: T.Text
   , process     :: Process
-  , started     :: Bool
   , memoryUsage :: Int
   , uptime      :: Int
   , status      :: T.Text
   , logFile     :: FilePath} deriving (Generic, Show, ToJSON, FromJSON)
 
 
+processState :: Process -> IO String
+processState p = do
+  alive <- isAlive p
+  return $ if alive then "Started" else "Stopped"
+
+
 -- start a process as a monitored process given a unique name and a
 -- command to start it
-monitoredProcess :: T.Text -> T.Text -> IO MonitoredProcess
+monitoredProcess :: T.Text -> T.Text -> IO (Maybe MonitoredProcess)
 monitoredProcess name cmd = do
   startedProcess <- start name cmd
   loggingDirectory <- Internal.loggingDirectory
   case startedProcess of
-    Just process -> do
-      return $ monitoredProc
-      where
-        monitoredProc = MonitoredProcess { name        = name
-                                         , process     = process
-                                         , started     = True
-                                         , memoryUsage = 0
-                                         , uptime      = 0
-                                         , status      = "Running"
-                                         , logFile     = loggingDirectory </> T.unpack name
-                                         }
-
-    Nothing -> do
-      return $ MonitoredProcess { name = name
-                                , process = Process { pname = name
-                                                    , pid = "-1"
-                                                    , command = cmd
-                                                    }
-                                , started = False
+    Just p -> do
+      state <- processState p
+      return $ Just MonitoredProcess { name        = name
+                                , process     = p
                                 , memoryUsage = 0
-                                , uptime = 0
-                                , status = "Stopped"
-                                , logFile = loggingDirectory </> T.unpack name
+                                , uptime      = 0
+                                , status      = T.pack state
+                                , logFile     = loggingDirectory </> T.unpack name
                                 }
 
+    Nothing -> do
+      return Nothing
 
-startM :: T.Text -> T.Text -> IO ()
+
+startM :: T.Text -> T.Text -> IO (Maybe MonitoredProcess)
 startM name cmd = do
   unique <- isUnique name
   M.guard $ unique
-  process <- monitoredProcess name cmd
-  add process
+  mprocess <- monitoredProcess name cmd
+  case mprocess of
+    Just p -> do
+      add p
+      return $ Just p
+    Nothing -> do
+      return Nothing
   where
     isUnique :: T.Text -> IO Bool
     isUnique processName = do

@@ -84,8 +84,13 @@ parse command =
       serve (Server ip port)
 
     Start name cmd -> do
-      process <- (MO.startM (T.pack name) (T.pack cmd))
-      putStrLn $ show process
+      mprocess <- (MO.startM (T.pack name) (T.pack cmd))
+      case mprocess of
+        Just p -> do
+          print $ show p
+          alive <- MA.isAlive (MO.process p)
+        Nothing -> do
+          putStrLn $ "Unable to start process"
 
     ListAll -> do
       mprocesses <- MO.listAll
