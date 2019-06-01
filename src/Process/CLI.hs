@@ -73,7 +73,18 @@ withInfo :: Parser a -> String -> ParserInfo a
 withInfo opts desc = info (helper <*> opts) $ progDesc desc
 
 pInfo :: MO.MonitoredProcess -> [String]
-pInfo p = [T.unpack (MO.name p), show (MA.command (MO.process p)), show (MA.pid (MO.process p))]
+pInfo mprocess =
+  [T.unpack $ MO.name mprocess
+  , show $ MA.command p
+  , show $ MA.pid p
+  , T.unpack $ MO.status mprocess
+  , show $ MO.memory mprocess
+  , show $ MO.cpu mprocess
+  , show $ MO.uptime mprocess
+  ]
+  where
+    p = MO.process mprocess
+
 
 parse :: Options -> IO ()
 parse command =
@@ -99,7 +110,14 @@ parse command =
           where
             pTable = Table
               (Group NoLine (map (\n -> Header (show n)) [1..(length mprocesses)]))
-              (Group NoLine [Header "name", Header "command", Header "pid"])
+              (Group NoLine [Header "name"
+                            , Header "command"
+                            , Header "pid"
+                            , Header "status"
+                            , Header "memory"
+                            , Header "cpu"
+                            , Header "uptime"
+                            ])
               (map pInfo mprocesses)
 
         Nothing -> putStrLn "No processes found."
