@@ -32,7 +32,8 @@ data MonitoredProcess = MonitoredProcess
   , cpu         :: Float
   , uptime      :: Int
   , status      :: T.Text
-  , logFile     :: FilePath} deriving (Generic, Show, ToJSON, FromJSON)
+  -- , logFile     :: FilePath
+  } deriving (Generic, Show, ToJSON, FromJSON)
 
 
 processState :: Process -> IO String
@@ -59,7 +60,7 @@ monitoredProcess name cmd = do
                                      , cpu         = cpu
                                      , uptime      = round uptime
                                      , status      = T.pack state
-                                     , logFile     = loggingDirectory </> T.unpack name
+                                     -- , logFile     = loggingDirectory </> T.unpack name
                                      }
 
     Nothing -> do
