@@ -14,7 +14,9 @@ import qualified Process.Internal.Common as Internal
 import Process.Manage (Process(..), isAlive, kill, start)
 import Control.Monad as M
 import Data.Aeson
+import qualified Data.ByteString.Lazy.Char8 as C
 import qualified Data.ByteString.Lazy as B
+import qualified Data.String.Utils as U
 import qualified Data.Text as T
 import GHC.Generics
 import System.Exit
@@ -26,7 +28,8 @@ import qualified System.Process.Typed as P
 data MonitoredProcess = MonitoredProcess
   { name        :: T.Text
   , process     :: Process
-  , memoryUsage :: Int
+  , memory      :: Float
+  , cpu         :: Float
   , uptime      :: Int
   , status      :: T.Text
   , logFile     :: FilePath} deriving (Generic, Show, ToJSON, FromJSON)
@@ -47,16 +50,37 @@ monitoredProcess name cmd = do
   case startedProcess of
     Just p -> do
       state <- processState p
+      cpu <- cpuUsage p
+      memory <- memoryUsage p
+      uptime <- elapsedTime p
       return $ Just MonitoredProcess { name        = name
-                                , process     = p
-                                , memoryUsage = 0
-                                , uptime      = 0
-                                , status      = T.pack state
-                                , logFile     = loggingDirectory </> T.unpack name
-                                }
+                                     , process     = p
+                                     , memory      = memory
+                                     , cpu         = cpu
+                                     , uptime      = round uptime
+                                     , status      = T.pack state
+                                     , logFile     = loggingDirectory </> T.unpack name
+                                     }
 
     Nothing -> do
       return Nothing
+
+
+psInfo :: String -> Process -> IO (Float)
+psInfo cmd p = do
+  (_, output)<- P.readProcessStdout $ P.shell cmd
+  let val = read (U.strip . C.unpack $ output) :: Float
+    in
+    return val
+
+cpuUsage :: Process -> IO Float
+cpuUsage p = psInfo ("ps -p " ++ (pid p) ++ " -o %cpu | grep -v CPU") p
+
+memoryUsage :: Process -> IO Float
+memoryUsage p = psInfo ("ps -p " ++ (pid p) ++ " -o %mem | grep -v MEM") p
+
+elapsedTime :: Process -> IO Float
+elapsedTime p = psInfo ("ps -p " ++ (pid p) ++ " -o etimes | grep -v ELAPSED") p
 
 
 startM :: T.Text -> T.Text -> IO (Maybe MonitoredProcess)
@@ -66,6 +90,7 @@ startM name cmd = do
   mprocess <- monitoredProcess name cmd
   case mprocess of
     Just p -> do
+      isAlive (process p)
       add p
       return $ Just p
     Nothing -> do

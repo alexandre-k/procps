@@ -88,7 +88,6 @@ parse command =
       case mprocess of
         Just p -> do
           print $ show p
-          alive <- MA.isAlive (MO.process p)
         Nothing -> do
           putStrLn $ "Unable to start process"
 
