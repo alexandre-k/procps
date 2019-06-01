@@ -35,17 +35,11 @@ dashboard :: ScottyM ()
 dashboard = do
   get "/" $ do
     processes <- liftIO listAll
-    case processes of
-      Just p -> html . renderHtml $ index p
-      Nothing -> html . renderHtml $ index []
+    html . renderHtml $ index processes
 
   get "/mprocesses" $ do
     mprocesses <- liftIO listAll
-    case mprocesses of
-      Just mprocesses ->
-        json $ mprocesses
-      Nothing ->
-        liftIO $ putStrLn "..."
+    json $ mprocesses
 
   post "/api/v1.0/start" $ do
     process <- liftIO $ monitoredProcess "thunderbird" "/usr/bin/thunderbird"

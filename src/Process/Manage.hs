@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Process.Manage
   ( FilterProperty (..)
@@ -16,8 +17,11 @@ module Process.Manage
 where
 
 import qualified Process.Internal.Common as Internal
+import Control.Exception
+import Control.Monad.Trans.Except
 import Data.Aeson
 import qualified Data.List as L
+import Data.Maybe
 import qualified Data.Text as T
 import GHC.Generics
 import System.Directory
@@ -44,7 +48,8 @@ runningProcesses = do
 listProcesses :: IO [Process]
 listProcesses = do
   procs <- runningProcesses
-  mapM readProcessInfo procs
+  procs' <- mapM readProcessInfo procs
+  return $ catMaybes procs'
 
 -- Determine if a process is alive based on all processes found
 isAlive :: Process -> IO Bool
@@ -88,11 +93,17 @@ findProcess filterProperty keyword = do
     isBlank s = T.null . T.strip $ s
 
 -- read information of interest for a given process found in /proc
-readProcessInfo :: FilePath -> IO Process
+readProcessInfo :: FilePath -> IO (Maybe Process)
 readProcessInfo p = do
-  name <- readFile (Internal.processName $ T.pack p)
-  cmd <- readFile (Internal.processCommand $ T.pack p)
-  return $ Process { pid = p, pname = T.strip . T.pack $ name, command = T.strip . T.pack $ cmd }
+  name <- try $ readFile (Internal.processName $ T.pack p)
+  cmd <- try $ readFile (Internal.processCommand $ T.pack p)
+  case name of
+    Left (_ :: IOException) -> return Nothing
+    Right name' -> case cmd of
+      Left (_ :: IOException) -> return Nothing
+      Right cmd' -> return $ Just Process { pid = p
+                                          , pname = T.strip . T.pack $ name'
+                                          , command = T.strip . T.pack $ cmd' }
 
 -- kill a process given a Process data type
 kill :: Process -> IO (ExitCode)

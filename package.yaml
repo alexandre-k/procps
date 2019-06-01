@@ -29,14 +29,17 @@ dependencies:
 - containers
 - data-default-class
 - directory
+- either
 - filepath
 - MissingH
 - mtl
 - optparse-applicative
 - process
 - scotty
+- strict
 - tabular
 - text
+- transformers
 - typed-process
 - wai-cors
 - warp

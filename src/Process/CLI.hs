@@ -7,12 +7,15 @@ module Process.CLI
   )
 where
 
+import Control.Monad as M
 import Data.Semigroup ((<>))
 import qualified Data.Text as T
 import Options.Applicative
+import qualified Process.Internal.Common as Internal
 import qualified Process.Manage as MA
 import qualified Process.Monitor as MO
 import Process.Web.Server
+import System.Directory
 import Text.Tabular
 import Text.Tabular.AsciiArt
 
@@ -87,7 +90,13 @@ pInfo mprocess =
 
 
 parse :: Options -> IO ()
-parse command =
+parse command = do
+  -- confFile <- Internal.configFile
+  -- configDirectory <- Internal.configDirectory
+  -- createDirectoryIfMissing True configDirectory
+  -- confFileExists <- doesFileExist confFile
+  -- M.when (not confFileExists) (writeFile confFile "")
+
   case command of
 
     Serve ip port -> do
@@ -104,23 +113,20 @@ parse command =
 
     ListAll -> do
       mprocesses <- MO.listAll
-      case mprocesses of
-        Just mprocesses ->
-          putStrLn $ render id id id pTable
-          where
-            pTable = Table
-              (Group NoLine (map (\n -> Header (show n)) [1..(length mprocesses)]))
-              (Group NoLine [Header "name"
-                            , Header "command"
-                            , Header "pid"
-                            , Header "status"
-                            , Header "memory"
-                            , Header "cpu"
-                            , Header "uptime"
-                            ])
-              (map pInfo mprocesses)
-
-        Nothing -> putStrLn "No processes found."
+      putStrLn $ show mprocesses
+      -- let pTable = Table
+      --   (Group NoLine (map (\n -> Header (show n)) [1..(length mprocesses)]))
+      --   (Group NoLine [Header "name"
+      --                 , Header "command"
+      --                 , Header "pid"
+      --                 , Header "status"
+      --                 , Header "memory"
+      --                 , Header "cpu"
+      --                 , Header "uptime"
+      --               ])
+      --   (map pInfo mprocesses)
+      -- in
+      --   putStrLn $ render id id id pTable
 
     Show name -> do
       mprocesses <- MA.findProcess MA.PName (T.pack name)
