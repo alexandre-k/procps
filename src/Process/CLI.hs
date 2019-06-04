@@ -9,6 +9,7 @@ where
 
 import Control.Monad as M
 import Data.Semigroup ((<>))
+import Data.String (fromString)
 import qualified Data.Text as T
 import Options.Applicative
 import qualified Process.Internal.Common as Internal
@@ -16,6 +17,7 @@ import qualified Process.Manage as MA
 import qualified Process.Monitor as MO
 import Process.Web.Server
 import System.Directory
+import System.Exit
 import Text.Tabular
 import Text.Tabular.AsciiArt
 
@@ -23,6 +25,7 @@ import Text.Tabular.AsciiArt
 data Options
   = Serve String Int
   | Start String String
+  | Stop FilePath
   | ListAll
   | Show String
 
@@ -43,6 +46,11 @@ startParser = Start
   <*> strArgument
   ( metavar "command of the said process"
   <> help "A command to launch a given process")
+
+stopParser :: Parser Options
+stopParser = Stop <$> strArgument
+  ( metavar "Name of a process"
+  <> help "Name of a process")
 
 serveParser :: Parser Options
 serveParser = Serve
@@ -67,6 +75,8 @@ parseOptions = subparser $
    (withInfo serveParser "Start a web server to visualize processes through a web interface")
   <> command "start"
    (withInfo startParser "Start a process given its name and a command")
+  <> command "stop"
+   (withInfo stopParser "Stop a process given its name")
   <> command "list"
    (withInfo listAllParser "List all started processes")
   <> command "show"
@@ -110,6 +120,17 @@ parse command = do
           print $ show p
         Nothing -> do
           putStrLn $ "Unable to start process"
+
+    Stop name -> do
+      mprocesses <- MA.findProcess MA.PName (T.pack name)
+      let mprocess = head mprocesses
+      exitCode <- MA.stop MA.Process { MA.pname   = MA.pname mprocess
+                                     , MA.pid     = MA.pid mprocess
+                                     , MA.command = MA.command mprocess
+                                     }
+      case exitCode of
+        ExitFailure _ -> putStrLn $ "o process " ++ name ++ " found!"
+        _ -> putStrLn $ name ++ " stopped."
 
     ListAll -> do
       mprocesses <- MO.listAll

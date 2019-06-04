@@ -18,7 +18,6 @@ where
 
 import qualified Process.Internal.Common as Internal
 import Control.Exception
-import Control.Monad.Trans.Except
 import Data.Aeson
 import qualified Data.List as L
 import Data.Maybe
@@ -108,7 +107,7 @@ readProcessInfo p = do
 -- kill a process given a Process data type
 kill :: Process -> IO (ExitCode)
 kill process =
-  let cmd = "kill -9 " ++ (pid process)
+  let cmd = "sudo kill -9 " ++ (pid process)
   in do
     exitCode <- PT.runProcess $ PT.shell cmd
     return exitCode
@@ -119,13 +118,13 @@ start name cmd = do
   hdl <- P.spawnProcess (T.unpack cmd) []
   procPid <- P.getPid hdl
   case procPid of
-    Just p -> return $ Just Process { pname   = name
-                                    , pid     = show $ p
-                                    , command = cmd }
+    Just p ->
+      return $ Just Process { pname   = name
+                            , pid     = show $ p
+                            , command = cmd }
     Nothing -> return Nothing
 
 
 stop :: Process -> IO ExitCode
 stop process = do
-    exists <- isAlive process
-    if exists then kill process else return $ ExitFailure 127
+    kill process
