@@ -9,7 +9,6 @@ where
 
 import Control.Monad as M
 import Data.Semigroup ((<>))
-import Data.String (fromString)
 import qualified Data.Text as T
 import Options.Applicative
 import qualified Process.Internal.Common as Internal
@@ -25,7 +24,7 @@ import Text.Tabular.AsciiArt
 data Options
   = Serve String Int
   | Start String String
-  | Stop FilePath
+  | Stop String
   | ListAll
   | Show String
 
@@ -148,11 +147,11 @@ showProcesses mprocesses = putStrLn $ render id id id pTable
   pTable = Table
       (Group NoLine (map (\n -> Header (show n)) [1..(length mprocesses)]))
       (Group NoLine [ Header "name"
-                  , Header "command"
-                  , Header "pid"
-                  , Header "status"
-                  , Header "memory"
-                  , Header "cpu"
-                  , Header "uptime"
-                  ])
+                    , Header "command"
+                    , Header "pid"
+                    , Header "status"
+                    , Header "memory"
+                    , Header "cpu"
+                    , Header "uptime"
+                    ])
       (map pInfo mprocesses)
