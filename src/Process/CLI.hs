@@ -129,26 +129,30 @@ parse command = do
                                      , MA.command = MA.command mprocess
                                      }
       case exitCode of
-        ExitFailure _ -> putStrLn $ "o process " ++ name ++ " found!"
+        ExitFailure _ -> putStrLn $ "No process " ++ name ++ " found!"
         _ -> putStrLn $ name ++ " stopped."
 
     ListAll -> do
       mprocesses <- MO.listAll
-      putStrLn $ show mprocesses
-      -- let pTable = Table
-      --   (Group NoLine (map (\n -> Header (show n)) [1..(length mprocesses)]))
-      --   (Group NoLine [Header "name"
-      --                 , Header "command"
-      --                 , Header "pid"
-      --                 , Header "status"
-      --                 , Header "memory"
-      --                 , Header "cpu"
-      --                 , Header "uptime"
-      --               ])
-      --   (map pInfo mprocesses)
-      -- in
-      --   putStrLn $ render id id id pTable
+      showProcesses mprocesses
 
     Show name -> do
       mprocesses <- MA.findProcess MA.PName (T.pack name)
       putStrLn $ show mprocesses
+
+
+showProcesses :: [MO.MonitoredProcess] -> IO ()
+showProcesses [] = putStrLn "No processes currently monitored."
+showProcesses mprocesses = putStrLn $ render id id id pTable
+  where
+  pTable = Table
+      (Group NoLine (map (\n -> Header (show n)) [1..(length mprocesses)]))
+      (Group NoLine [ Header "name"
+                  , Header "command"
+                  , Header "pid"
+                  , Header "status"
+                  , Header "memory"
+                  , Header "cpu"
+                  , Header "uptime"
+                  ])
+      (map pInfo mprocesses)
